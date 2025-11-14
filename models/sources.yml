@@ -3,7 +3,7 @@ sources:
 - name: dwh_raw
   database: bsl_raw
   schema: dwh_raw
-  description: Raw data warehouse schema containing source system data for addresses, categories, customers, and inventory
+  description: Raw data warehouse schema containing source tables for customer, product, and order data
   tables:
   - name: addresses
     description: Customer address information with geographical details
@@ -11,7 +11,7 @@ sources:
     - name: address_id
       description: Unique identifier for each address record
     - name: customer_id
-      description: Foreign key reference to customers table
+      description: Foreign key linking to customers table
     - name: address_line1
       description: Primary address line containing street information
     - name: city
@@ -19,20 +19,20 @@ sources:
     - name: country
       description: Country name for the address
     - name: inserted_at
-      description: Timestamp when the address record was inserted, to be converted to date
+      description: Timestamp when the address record was created
   - name: categories
     description: Product category hierarchy with active status tracking
     columns:
     - name: category_id
-      description: Unique identifier for each category
+      description: Unique identifier for each product category
     - name: category_name
-      description: Display name of the category
+      description: Display name of the product category
     - name: parent_category_id
-      description: Reference to parent category for hierarchical structure
+      description: Foreign key to parent category for hierarchical structure
     - name: is_active
-      description: Boolean flag indicating if category is active, defaults to true if null
+      description: Boolean flag indicating if category is currently active
   - name: customers
-    description: Customer master data with contact information and audit timestamps
+    description: Customer master data with contact information
     columns:
     - name: customer_id
       description: Unique identifier for each customer
@@ -43,12 +43,12 @@ sources:
     - name: email
       description: Customer's email address
     - name: inserted_at
-      description: Timestamp when customer record was created, defaults to current_date if null
+      description: Timestamp when the customer record was created
   - name: inventory
-    description: Product inventory levels by supplier and warehouse location with update tracking
+    description: Product inventory levels by supplier and warehouse location
     columns:
     - name: product_id
-      description: Unique identifier for the product
+      description: Unique identifier for each product
     - name: supplier_id
       description: Unique identifier for the supplier
     - name: stock_qty
@@ -56,4 +56,17 @@ sources:
     - name: warehouse_location
       description: Physical location where inventory is stored
     - name: last_updated
-      description: Timestamp of last inventory update, used to identify latest records per product and supplier
+      description: Timestamp of the most recent inventory update
+  - name: order_items
+    description: Individual line items within customer orders
+    columns:
+    - name: order_item_id
+      description: Unique identifier for each order line item
+    - name: order_id
+      description: Foreign key linking to the parent order
+    - name: product_id
+      description: Foreign key linking to the ordered product
+    - name: quantity
+      description: Number of units ordered for this line item
+    - name: unit_price
+      description: Price per unit for the ordered product
