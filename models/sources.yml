@@ -19,4 +19,4 @@ sources:
     - name: country
       description: Country name for the address
     - name: inserted_at
-      description: Timestamp when the record was inserted into the system
+      description: Timestamp when the record was inserted into the raw table
