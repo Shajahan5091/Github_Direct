@@ -3,10 +3,10 @@ sources:
 - name: dwh_raw
   database: bsl_raw
   schema: dwh_raw
-  description: Raw data warehouse schema containing transactional and master data tables
+  description: Raw data warehouse schema containing source tables for e-commerce operations
   tables:
   - name: addresses
-    description: Customer address information with geographical details
+    description: Customer address information with location details
     columns:
     - name: address_id
       description: Unique identifier for each address record
@@ -19,9 +19,9 @@ sources:
     - name: country
       description: Country name for the address
     - name: inserted_at
-      description: Timestamp when the address record was created, converted to date format
+      description: Timestamp when the address record was created
   - name: categories
-    description: Product category hierarchy with parent-child relationships
+    description: Product category hierarchy with active status tracking
     columns:
     - name: category_id
       description: Unique identifier for each product category
@@ -30,9 +30,9 @@ sources:
     - name: parent_category_id
       description: Reference to parent category for hierarchical structure
     - name: is_active
-      description: Flag indicating if category is active, defaults to true when null
+      description: Boolean flag indicating if category is currently active
   - name: customers
-    description: Customer master data containing personal information
+    description: Customer master data with contact information
     columns:
     - name: customer_id
       description: Unique identifier for each customer
@@ -43,20 +43,20 @@ sources:
     - name: email
       description: Customer's email address
     - name: inserted_at
-      description: Timestamp when customer record was created, defaults to current_date when null
+      description: Timestamp when the customer record was created
   - name: inventory
     description: Product inventory levels by supplier and warehouse location
     columns:
     - name: product_id
-      description: Unique identifier for each product
+      description: Foreign key reference to products table
     - name: supplier_id
-      description: Unique identifier for each supplier
+      description: Identifier for the product supplier
     - name: stock_qty
-      description: Current stock quantity available
+      description: Current quantity of product in stock
     - name: warehouse_location
       description: Physical location where inventory is stored
     - name: last_updated
-      description: Timestamp of last inventory update, used to identify latest records
+      description: Timestamp of the last inventory update
   - name: order_items
     description: Individual line items within customer orders
     columns:
@@ -65,11 +65,11 @@ sources:
     - name: order_id
       description: Foreign key reference to orders table
     - name: product_id
-      description: Foreign key reference to product being ordered
+      description: Foreign key reference to products table
     - name: quantity
-      description: Number of units ordered for this line item
+      description: Number of units ordered for this item
     - name: unit_price
-      description: Price per unit for the product, used in extended amount calculations
+      description: Price per unit for the ordered product
   - name: orders
     description: Customer order header information with status and totals
     columns:
@@ -91,8 +91,17 @@ sources:
     - name: order_id
       description: Foreign key reference to orders table
     - name: payment_date
-      description: Date when payment was processed
+      description: Date when the payment was processed
     - name: payment_method
       description: Method used for payment processing
     - name: amount
-      description: Payment amount, set to null if negative values detected
+      description: Monetary amount of the payment
+  - name: products
+    description: Product catalog with pricing information
+    columns:
+    - name: product_id
+      description: Unique identifier for each product
+    - name: product_name
+      description: Display name of the product
+    - name: price
+      description: Current selling price of the product
