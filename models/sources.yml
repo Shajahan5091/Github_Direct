@@ -3,31 +3,44 @@ sources:
 - name: dwh_raw
   database: bsl_raw
   schema: dwh_raw
-  description: Raw data warehouse schema containing source system data
+  description: Raw data warehouse schema containing customer, product, and address information
   tables:
   - name: addresses
-    description: Customer address information table
+    description: Customer address information including location details and tracking timestamps
     columns:
     - name: address_id
       description: Unique identifier for each address record
     - name: customer_id
-      description: Foreign key reference to customer table
+      description: Foreign key reference to customers table
     - name: address_line1
       description: Primary address line containing street information
     - name: city
-      description: City name for the address
+      description: City name for the address location
     - name: country
-      description: Country name for the address
+      description: Country name for the address location
     - name: inserted_at
-      description: Timestamp when the record was inserted into the system
+      description: Timestamp when the address record was created, converted to date format
   - name: categories
-    description: Product category hierarchy table
+    description: Product category hierarchy with active status tracking
     columns:
     - name: category_id
       description: Unique identifier for each category
     - name: category_name
-      description: Name of the product category
+      description: Display name of the product category
     - name: parent_category_id
-      description: Foreign key reference to parent category for hierarchy
+      description: Reference to parent category for hierarchical structure
     - name: is_active
       description: Boolean flag indicating if category is active, defaults to true when null
+  - name: customers
+    description: Customer master data including personal information and registration tracking
+    columns:
+    - name: customer_id
+      description: Unique identifier for each customer
+    - name: first_name
+      description: Customer's first name
+    - name: last_name
+      description: Customer's last name
+    - name: email
+      description: Customer's email address
+    - name: inserted_at
+      description: Timestamp when customer record was created, converted to date format with current_date default
