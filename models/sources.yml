@@ -19,20 +19,20 @@ sources:
     - name: country
       description: Country name for the address
     - name: inserted_at
-      description: Timestamp when the address record was inserted
+      description: Timestamp when the address record was created
   - name: categories
-    description: Product category hierarchy with active status tracking
+    description: Product category hierarchy with parent-child relationships
     columns:
     - name: category_id
-      description: Unique identifier for each product category
+      description: Unique identifier for each category
     - name: category_name
       description: Name of the product category
     - name: parent_category_id
       description: Reference to parent category for hierarchical structure
     - name: is_active
-      description: Boolean flag indicating if category is currently active
+      description: Flag indicating if category is currently active, defaults to true if null
   - name: customers
-    description: Customer master data with contact information
+    description: Customer master data with personal information
     columns:
     - name: customer_id
       description: Unique identifier for each customer
@@ -43,59 +43,59 @@ sources:
     - name: email
       description: Customer's email address
     - name: inserted_at
-      description: Timestamp when the customer record was created
+      description: Timestamp when customer record was created, defaults to current_date if null
   - name: inventory
     description: Product inventory levels by supplier and warehouse location
     columns:
     - name: product_id
-      description: Foreign key reference to products table
+      description: Reference to product identifier
     - name: supplier_id
-      description: Identifier for the product supplier
+      description: Reference to supplier identifier
     - name: stock_qty
       description: Current stock quantity available
     - name: warehouse_location
       description: Physical location where inventory is stored
     - name: last_updated
-      description: Timestamp of the last inventory update
+      description: Timestamp of last inventory update, used to identify latest records
   - name: order_items
     description: Individual line items within customer orders
     columns:
     - name: order_item_id
       description: Unique identifier for each order line item
     - name: order_id
-      description: Foreign key reference to orders table
+      description: Reference to parent order
     - name: product_id
-      description: Foreign key reference to products table
+      description: Reference to ordered product
     - name: quantity
-      description: Number of units ordered for this item
+      description: Number of units ordered
     - name: unit_price
-      description: Price per unit for the ordered item
+      description: Price per unit for the product
   - name: orders
     description: Customer order header information with status and totals
     columns:
     - name: order_id
-      description: Unique identifier for each customer order
+      description: Unique identifier for each order
     - name: customer_id
-      description: Foreign key reference to customers table
+      description: Reference to customer who placed the order
     - name: order_date
-      description: Date when the order was placed
+      description: Date when order was placed
     - name: status
       description: Current status of the order
     - name: total_amount
       description: Total monetary value of the order
   - name: payments
-    description: Payment transactions associated with customer orders
+    description: Payment transactions associated with orders
     columns:
     - name: payment_id
       description: Unique identifier for each payment transaction
     - name: order_id
-      description: Foreign key reference to orders table
+      description: Reference to associated order
     - name: payment_date
-      description: Date when the payment was processed
+      description: Date when payment was processed
     - name: payment_method
       description: Method used for payment processing
     - name: amount
-      description: Payment amount in base currency
+      description: Payment amount, set to null if negative
   - name: products
     description: Product catalog with pricing information
     columns:
@@ -104,17 +104,30 @@ sources:
     - name: product_name
       description: Name of the product
     - name: price
-      description: Current selling price of the product
+      description: Product price used for bucketing into Low/Mid/High/Premium categories
   - name: shipments
-    description: Order shipment tracking and carrier information
+    description: Shipping information for order fulfillment
     columns:
     - name: shipment_id
       description: Unique identifier for each shipment
     - name: order_id
-      description: Foreign key reference to orders table
+      description: Reference to associated order
     - name: shipped_date
-      description: Date when the order was shipped
+      description: Date when shipment was dispatched
     - name: carrier
-      description: Shipping carrier company name
+      description: Shipping carrier company
     - name: tracking_number
-      description: Carrier-provided tracking number for shipment
+      description: Carrier-provided tracking identifier
+  - name: suppliers
+    description: Supplier master data with contact information
+    columns:
+    - name: supplier_id
+      description: Unique identifier for each supplier
+    - name: supplier_name
+      description: Name of the supplier company
+    - name: contact_email
+      description: Primary contact email for the supplier
+    - name: country
+      description: Country where supplier is located
+    - name: active_flag
+      description: Flag indicating if supplier is active, defaults to false if null
