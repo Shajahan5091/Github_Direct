@@ -3,7 +3,7 @@ sources:
 - name: dwh_raw
   database: bsl_raw
   schema: dwh_raw
-  description: Raw data warehouse schema containing source tables for customer, product, and order management
+  description: Raw data warehouse schema containing transactional and master data tables
   tables:
   - name: addresses
     description: Customer address information with geographical details
@@ -11,7 +11,7 @@ sources:
     - name: address_id
       description: Unique identifier for each address record
     - name: customer_id
-      description: Foreign key linking to customers table
+      description: Foreign key reference to customers table
     - name: address_line1
       description: Primary address line containing street information
     - name: city
@@ -19,7 +19,7 @@ sources:
     - name: country
       description: Country name for the address
     - name: inserted_at
-      description: Timestamp when the address record was created, converted to date in transformations
+      description: Timestamp when the address record was created, converted to date format
   - name: categories
     description: Product category hierarchy with parent-child relationships
     columns:
@@ -48,9 +48,9 @@ sources:
     description: Product inventory levels by supplier and warehouse location
     columns:
     - name: product_id
-      description: Unique identifier for the product
+      description: Unique identifier for each product
     - name: supplier_id
-      description: Unique identifier for the supplier
+      description: Unique identifier for each supplier
     - name: stock_qty
       description: Current stock quantity available
     - name: warehouse_location
@@ -63,23 +63,36 @@ sources:
     - name: order_item_id
       description: Unique identifier for each order line item
     - name: order_id
-      description: Foreign key linking to orders table
+      description: Foreign key reference to orders table
     - name: product_id
-      description: Foreign key linking to product information
+      description: Foreign key reference to product being ordered
     - name: quantity
-      description: Number of units ordered for this item
+      description: Number of units ordered for this line item
     - name: unit_price
-      description: Price per unit for the product
+      description: Price per unit for the product, used in extended amount calculations
   - name: orders
     description: Customer order header information with status and totals
     columns:
     - name: order_id
-      description: Unique identifier for each order
+      description: Unique identifier for each customer order
     - name: customer_id
-      description: Foreign key linking to customers table
+      description: Foreign key reference to customers table
     - name: order_date
       description: Date when the order was placed
     - name: status
       description: Current status of the order
     - name: total_amount
       description: Total monetary value of the order
+  - name: payments
+    description: Payment transactions associated with customer orders
+    columns:
+    - name: payment_id
+      description: Unique identifier for each payment transaction
+    - name: order_id
+      description: Foreign key reference to orders table
+    - name: payment_date
+      description: Date when payment was processed
+    - name: payment_method
+      description: Method used for payment processing
+    - name: amount
+      description: Payment amount, set to null if negative values detected
