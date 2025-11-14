@@ -10,13 +10,13 @@ models:
   - name: customer_id
     description: Foreign key reference to customer dimension table
   - name: address_line1
-    description: Primary address line with whitespace trimmed
+    description: Primary address line with trimmed whitespace
   - name: city
     description: City name in uppercase format
   - name: country
     description: Country name for the address
   - name: inserted_at
-    description: Date when the address record was first inserted
+    description: Date when the address record was created
 - name: dim_category
   description: Dimension table for product categories with hierarchical structure
   columns:
@@ -36,7 +36,7 @@ models:
     - accepted_values:
         values: [true, false]
 - name: dim_customer
-  description: Dimension table containing customer information with derived attributes
+  description: Dimension table containing customer information and derived attributes
   columns:
   - name: customer_id
     description: Unique identifier for each customer
@@ -56,7 +56,7 @@ models:
     - accepted_values:
         values: ['Gold', 'Silver', 'Bronze']
 - name: dim_product
-  description: Dimension table for products with pricing information and categorization
+  description: Dimension table for product information with pricing categories
   columns:
   - name: product_id
     description: Unique identifier for each product
@@ -67,7 +67,7 @@ models:
   - name: price
     description: Product price with decimal precision
   - name: price_band
-    description: Price category bucket for analysis purposes
+    description: Price category bucket for product segmentation
     tests:
     - accepted_values:
         values: ['Low', 'Mid', 'High', 'Premium']
@@ -170,7 +170,7 @@ models:
   - name: is_fully_applied
     description: Flag indicating if total payments cover the full order amount
 - name: fact_shipment
-  description: Fact table containing shipment information and delivery tracking
+  description: Fact table containing shipment tracking and delivery performance metrics
   columns:
   - name: shipment_id
     description: Unique identifier for each shipment
@@ -187,4 +187,4 @@ models:
   - name: carrier
     description: Shipping carrier name in uppercase format
   - name: tracking_number
-    description: Carrier-provided tracking number for shipment
+    description: Carrier-provided tracking identifier
