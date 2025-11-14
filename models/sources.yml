@@ -6,12 +6,12 @@ sources:
   description: Raw data warehouse schema containing source system data
   tables:
   - name: addresses
-    description: Customer address information from source systems
+    description: Customer address information table
     columns:
     - name: address_id
       description: Unique identifier for each address record
     - name: customer_id
-      description: Foreign key linking to customer records
+      description: Foreign key reference to customer table
     - name: address_line1
       description: Primary address line containing street information
     - name: city
@@ -19,4 +19,15 @@ sources:
     - name: country
       description: Country name for the address
     - name: inserted_at
-      description: Timestamp when the record was inserted into the raw table
+      description: Timestamp when the record was inserted into the system
+  - name: categories
+    description: Product category hierarchy table
+    columns:
+    - name: category_id
+      description: Unique identifier for each category
+    - name: category_name
+      description: Name of the product category
+    - name: parent_category_id
+      description: Foreign key reference to parent category for hierarchy
+    - name: is_active
+      description: Boolean flag indicating if category is active, defaults to true when null
