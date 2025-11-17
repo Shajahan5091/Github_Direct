@@ -9,7 +9,7 @@ models:
         tests:
           - unique
       - name: customer_id
-        description: "Customer identifier linked to dim_customer"
+        description: "Foreign key to customer dimension"
       - name: address_line1
         description: "Primary address line with trimmed whitespace"
       - name: city
@@ -29,11 +29,11 @@ models:
       - name: category_name
         description: "Category name in title case format"
       - name: parent_category_id
-        description: "Parent category identifier for hierarchical structure"
+        description: "Reference to parent category"
       - name: category_path
         description: "Hierarchical path showing parent and current category"
       - name: is_active
-        description: "Boolean flag indicating if category is active"
+        description: "Flag indicating if category is active"
         tests:
           - accepted_values:
               values: [true, false]
@@ -46,9 +46,9 @@ models:
         tests:
           - unique
       - name: first_name
-        description: "Customer first name in uppercase format"
+        description: "Customer first name in uppercase"
       - name: last_name
-        description: "Customer last name in uppercase format"
+        description: "Customer last name in uppercase"
       - name: email
         description: "Customer email in lowercase format"
       - name: customer_since_date
@@ -86,28 +86,28 @@ models:
       - name: supplier_name
         description: "Supplier name in title case format"
       - name: contact_email
-        description: "Supplier contact email in lowercase format"
+        description: "Supplier contact email in lowercase"
       - name: country
-        description: "Supplier country in uppercase format"
+        description: "Supplier country in uppercase"
       - name: is_active
-        description: "Boolean flag indicating if supplier is active"
+        description: "Flag indicating if supplier is active"
         tests:
           - accepted_values:
               values: [true, false]
 
   - name: fact_inventory
-    description: "Fact table containing inventory information"
+    description: "Fact table containing inventory snapshot data"
     columns:
       - name: product_id
-        description: "Product identifier linked to dim_product"
+        description: "Foreign key to product dimension"
         tests:
           - not_null
       - name: supplier_id
-        description: "Supplier identifier linked to dim_supplier"
+        description: "Foreign key to supplier dimension"
       - name: stock_qty
         description: "Current stock quantity"
       - name: warehouse_location
-        description: "Warehouse location in uppercase format"
+        description: "Warehouse location in uppercase"
       - name: snapshot_date
         description: "Date of inventory snapshot"
       - name: is_latest
@@ -121,7 +121,7 @@ models:
         tests:
           - unique
       - name: customer_id
-        description: "Customer identifier linked to dim_customer"
+        description: "Foreign key to customer dimension"
       - name: order_date
         description: "Date when order was placed"
         tests:
@@ -135,16 +135,16 @@ models:
         description: "Total order amount"
 
   - name: fact_order_item
-    description: "Fact table containing order item details"
+    description: "Fact table containing order line item details"
     columns:
       - name: order_item_id
         description: "Unique identifier for each order item"
         tests:
           - unique
       - name: order_id
-        description: "Order identifier linked to fact_order"
+        description: "Foreign key to order fact table"
       - name: product_id
-        description: "Product identifier linked to dim_product"
+        description: "Foreign key to product dimension"
       - name: quantity
         description: "Quantity of product ordered"
       - name: unit_price
@@ -152,19 +152,19 @@ models:
       - name: extended_amount
         description: "Total amount before discount (quantity * unit_price)"
       - name: discount_amount
-        description: "Discount amount allocated to this item"
+        description: "Allocated discount amount for this line item"
       - name: net_amount
         description: "Final amount after discount"
 
   - name: fact_payment
-    description: "Fact table containing payment information"
+    description: "Fact table containing payment transaction details"
     columns:
       - name: payment_id
         description: "Unique identifier for each payment"
         tests:
           - unique
       - name: order_id
-        description: "Order identifier linked to fact_order"
+        description: "Foreign key to order fact table"
       - name: payment_date
         description: "Date when payment was made"
         tests:
@@ -187,7 +187,7 @@ models:
         tests:
           - unique
       - name: order_id
-        description: "Order identifier linked to fact_order"
+        description: "Foreign key to order fact table"
       - name: shipped_date
         description: "Date when order was shipped"
         tests:
@@ -195,6 +195,6 @@ models:
       - name: days_to_ship
         description: "Number of days between order and shipment"
       - name: carrier
-        description: "Shipping carrier in uppercase format"
+        description: "Shipping carrier name in uppercase"
       - name: tracking_number
         description: "Shipment tracking number"
