@@ -43,8 +43,8 @@ inventory_with_lookups as (
             else source_inventory.stock_qty
         end as stock_qty,
         upper(source_inventory.warehouse_location) as warehouse_location,
-        date(source_inventory.last_updated) as snapshot_date,
-        source_inventory.last_updated as last_updated_timestamp
+        source_inventory.last_updated::date as snapshot_date,
+        source_inventory.last_updated
     from source_inventory
     left join product_lookup 
         on source_inventory.product_id = product_lookup.product_id
@@ -56,12 +56,12 @@ latest_records as (
     select 
         product_id,
         supplier_id,
-        max(last_updated_timestamp) as max_last_updated
+        max(last_updated) as max_last_updated
     from inventory_with_lookups
     group by product_id, supplier_id
 ),
 
-final_inventory as (
+final as (
     select 
         inventory_with_lookups.product_id,
         inventory_with_lookups.supplier_id,
@@ -69,9 +69,9 @@ final_inventory as (
         inventory_with_lookups.warehouse_location,
         inventory_with_lookups.snapshot_date,
         case 
-            when inventory_with_lookups.last_updated_timestamp = latest_records.max_last_updated 
-            then true
-            else false
+            when inventory_with_lookups.last_updated = latest_records.max_last_updated 
+            then true 
+            else false 
         end as is_latest
     from inventory_with_lookups
     inner join latest_records
@@ -79,11 +79,4 @@ final_inventory as (
         and inventory_with_lookups.supplier_id = latest_records.supplier_id
 )
 
-select 
-    product_id,
-    supplier_id,
-    stock_qty,
-    warehouse_location,
-    snapshot_date,
-    is_latest
-from final_inventory
+select * from final
