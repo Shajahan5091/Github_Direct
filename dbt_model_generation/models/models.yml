@@ -1,0 +1,200 @@
+version: 2
+
+models:
+  - name: dim_address
+    description: "Dimension table containing customer address information"
+    columns:
+      - name: address_id
+        description: "Unique identifier for each address"
+        tests:
+          - unique
+      - name: customer_id
+        description: "Customer identifier linked to dim_customer"
+      - name: address_line1
+        description: "Primary address line with trimmed whitespace"
+      - name: city
+        description: "City name in uppercase format"
+      - name: country
+        description: "Country name"
+      - name: inserted_at
+        description: "Date when address record was inserted"
+
+  - name: dim_category
+    description: "Dimension table containing product category information"
+    columns:
+      - name: category_id
+        description: "Unique identifier for each category"
+        tests:
+          - unique
+      - name: category_name
+        description: "Category name in title case format"
+      - name: parent_category_id
+        description: "Parent category identifier for hierarchical structure"
+      - name: category_path
+        description: "Hierarchical path showing parent and current category"
+      - name: is_active
+        description: "Boolean flag indicating if category is active"
+        tests:
+          - accepted_values:
+              values: [true, false]
+
+  - name: dim_customer
+    description: "Dimension table containing customer information"
+    columns:
+      - name: customer_id
+        description: "Unique identifier for each customer"
+        tests:
+          - unique
+      - name: first_name
+        description: "Customer first name in uppercase format"
+      - name: last_name
+        description: "Customer last name in uppercase format"
+      - name: email
+        description: "Customer email in lowercase format"
+      - name: customer_since_date
+        description: "Date when customer first registered"
+      - name: customer_tier
+        description: "Customer spending tier based on last 365 days"
+        tests:
+          - accepted_values:
+              values: ['Gold', 'Silver', 'Bronze']
+
+  - name: dim_product
+    description: "Dimension table containing product information"
+    columns:
+      - name: product_id
+        description: "Unique identifier for each product"
+        tests:
+          - unique
+      - name: product_name
+        description: "Product name in title case format"
+      - name: price
+        description: "Product price"
+      - name: price_band
+        description: "Price category bucket"
+        tests:
+          - accepted_values:
+              values: ['Low', 'Mid', 'High', 'Premium']
+
+  - name: dim_supplier
+    description: "Dimension table containing supplier information"
+    columns:
+      - name: supplier_id
+        description: "Unique identifier for each supplier"
+        tests:
+          - unique
+      - name: supplier_name
+        description: "Supplier name in title case format"
+      - name: contact_email
+        description: "Supplier contact email in lowercase format"
+      - name: country
+        description: "Supplier country in uppercase format"
+      - name: is_active
+        description: "Boolean flag indicating if supplier is active"
+        tests:
+          - accepted_values:
+              values: [true, false]
+
+  - name: fact_inventory
+    description: "Fact table containing inventory information"
+    columns:
+      - name: product_id
+        description: "Product identifier linked to dim_product"
+        tests:
+          - not_null
+      - name: supplier_id
+        description: "Supplier identifier linked to dim_supplier"
+      - name: stock_qty
+        description: "Current stock quantity"
+      - name: warehouse_location
+        description: "Warehouse location in uppercase format"
+      - name: snapshot_date
+        description: "Date of inventory snapshot"
+      - name: is_latest
+        description: "Flag indicating latest record per product and supplier"
+
+  - name: fact_order
+    description: "Fact table containing order information"
+    columns:
+      - name: order_id
+        description: "Unique identifier for each order"
+        tests:
+          - unique
+      - name: customer_id
+        description: "Customer identifier linked to dim_customer"
+      - name: order_date
+        description: "Date when order was placed"
+        tests:
+          - not_null
+      - name: order_status
+        description: "Current status of the order"
+        tests:
+          - accepted_values:
+              values: ['PENDING', 'CANCELLED', 'SHIPPED', 'DELIVERED']
+      - name: total_amount
+        description: "Total order amount"
+
+  - name: fact_order_item
+    description: "Fact table containing order item details"
+    columns:
+      - name: order_item_id
+        description: "Unique identifier for each order item"
+        tests:
+          - unique
+      - name: order_id
+        description: "Order identifier linked to fact_order"
+      - name: product_id
+        description: "Product identifier linked to dim_product"
+      - name: quantity
+        description: "Quantity of product ordered"
+      - name: unit_price
+        description: "Price per unit of product"
+      - name: extended_amount
+        description: "Total amount before discount (quantity * unit_price)"
+      - name: discount_amount
+        description: "Discount amount allocated to this item"
+      - name: net_amount
+        description: "Final amount after discount"
+
+  - name: fact_payment
+    description: "Fact table containing payment information"
+    columns:
+      - name: payment_id
+        description: "Unique identifier for each payment"
+        tests:
+          - unique
+      - name: order_id
+        description: "Order identifier linked to fact_order"
+      - name: payment_date
+        description: "Date when payment was made"
+        tests:
+          - not_null
+      - name: payment_method
+        description: "Method used for payment"
+        tests:
+          - accepted_values:
+              values: ['CARD', 'UPI', 'COD', 'NETBANKING']
+      - name: amount
+        description: "Payment amount"
+      - name: is_fully_applied
+        description: "Flag indicating if order is fully paid"
+
+  - name: fact_shipment
+    description: "Fact table containing shipment information"
+    columns:
+      - name: shipment_id
+        description: "Unique identifier for each shipment"
+        tests:
+          - unique
+      - name: order_id
+        description: "Order identifier linked to fact_order"
+      - name: shipped_date
+        description: "Date when order was shipped"
+        tests:
+          - not_null
+      - name: days_to_ship
+        description: "Number of days between order and shipment"
+      - name: carrier
+        description: "Shipping carrier in uppercase format"
+      - name: tracking_number
+        description: "Shipment tracking number"
