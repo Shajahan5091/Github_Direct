@@ -2,16 +2,16 @@ version: 2
 
 models:
   - name: dim_address
-    description: "Dimension table containing customer address information"
+    description: Dimension table containing customer address information
     columns:
       - name: address_id
-        description: "Unique identifier for each address"
+        description: Unique identifier for each address
         data_type: varchar
         tests:
-          - not_null
           - unique
+          - not_null
       - name: customer_id
-        description: "Foreign key to customer dimension"
+        description: Foreign key to customer dimension
         data_type: varchar
         tests:
           - not_null
@@ -19,111 +19,111 @@ models:
               to: ref('dim_customer')
               field: customer_id
       - name: address_line1
-        description: "Primary address line with whitespace trimmed"
+        description: Primary address line with trimmed whitespace
         data_type: varchar
         tests:
           - not_null
       - name: city
-        description: "City name in uppercase format"
+        description: City name in uppercase format
         data_type: varchar
         tests:
           - not_null
       - name: country
-        description: "Country name"
+        description: Country name
         data_type: varchar
         tests:
           - not_null
       - name: inserted_at
-        description: "Date when address record was inserted"
+        description: Date when address record was inserted
         data_type: date
         tests:
           - not_null
 
   - name: dim_category
-    description: "Dimension table containing product category information"
+    description: Dimension table containing product category hierarchy
     columns:
       - name: category_id
-        description: "Unique identifier for each category"
+        description: Unique identifier for each category
         data_type: varchar
         tests:
-          - not_null
           - unique
+          - not_null
       - name: category_name
-        description: "Category name in title case format"
+        description: Category name in title case format
         data_type: varchar
         tests:
           - not_null
       - name: parent_category_id
-        description: "Foreign key to parent category"
+        description: Foreign key to parent category
         data_type: varchar
       - name: category_path
-        description: "Hierarchical path showing parent and current category"
+        description: Hierarchical path showing parent and child category relationship
         data_type: varchar
-        tests:
-          - not_null
       - name: is_active
-        description: "Flag indicating if category is active"
+        description: Flag indicating if category is currently active
         data_type: boolean
         tests:
           - not_null
+          - accepted_values:
+              values: [true, false]
 
   - name: dim_customer
-    description: "Dimension table containing customer information"
+    description: Dimension table containing customer information
     columns:
       - name: customer_id
-        description: "Unique identifier for each customer"
+        description: Unique identifier for each customer
         data_type: varchar
         tests:
-          - not_null
           - unique
+          - not_null
       - name: first_name
-        description: "Customer first name in uppercase format"
+        description: Customer first name in uppercase format
         data_type: varchar
         tests:
           - not_null
       - name: last_name
-        description: "Customer last name in uppercase format"
+        description: Customer last name in uppercase format
         data_type: varchar
         tests:
           - not_null
       - name: email
-        description: "Customer email address in lowercase format"
+        description: Customer email address in lowercase format
         data_type: varchar
         tests:
           - not_null
           - unique
-          - dbt_utils.accepted_values:
-              values: ['@']
-              quote: false
+          - dbt_utils.accepted_range:
+              min_value: 1
+              inclusive: false
+              where: "email like '%@%'"
       - name: customer_since_date
-        description: "Date when customer first registered"
+        description: Date when customer first registered
         data_type: date
         tests:
           - not_null
       - name: customer_tier
-        description: "Customer spending tier based on last 365 days"
+        description: Customer spending tier based on last 365 days activity
         data_type: varchar
         tests:
-          - not_null
           - accepted_values:
               values: ['Gold', 'Silver', 'Bronze']
 
   - name: dim_product
-    description: "Dimension table containing product information"
+    description: Dimension table containing product information
     columns:
       - name: product_id
-        description: "Unique identifier for each product"
+        description: Unique identifier for each product
         data_type: varchar
         tests:
-          - not_null
           - unique
+          - not_null
       - name: product_name
-        description: "Product name in title case format"
+        description: Product name in title case format
         data_type: varchar
         tests:
           - not_null
       - name: price
-        description: "Product price"
+        description: Product price
         data_type: number
         tests:
           - not_null
@@ -131,48 +131,53 @@ models:
               min_value: 0
               inclusive: false
       - name: price_band
-        description: "Price category bucket"
+        description: Price category bucket for product
         data_type: varchar
         tests:
-          - not_null
           - accepted_values:
               values: ['Low', 'Mid', 'High', 'Premium']
 
   - name: dim_supplier
-    description: "Dimension table containing supplier information"
+    description: Dimension table containing supplier information
     columns:
       - name: supplier_id
-        description: "Unique identifier for each supplier"
+        description: Unique identifier for each supplier
         data_type: varchar
         tests:
-          - not_null
           - unique
+          - not_null
       - name: supplier_name
-        description: "Supplier name in title case format"
+        description: Supplier name in title case format
         data_type: varchar
         tests:
           - not_null
       - name: contact_email
-        description: "Supplier contact email in lowercase format"
+        description: Supplier contact email in lowercase format
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              inclusive: false
+              where: "contact_email like '%@%'"
       - name: country
-        description: "Supplier country in uppercase format"
+        description: Supplier country in uppercase format
         data_type: varchar
         tests:
           - not_null
       - name: is_active
-        description: "Flag indicating if supplier is active"
+        description: Flag indicating if supplier is currently active
         data_type: boolean
         tests:
           - not_null
+          - accepted_values:
+              values: [true, false]
 
   - name: fact_inventory
-    description: "Fact table containing inventory information"
+    description: Fact table containing inventory levels by product and supplier
     columns:
       - name: product_id
-        description: "Foreign key to product dimension"
+        description: Foreign key to product dimension
         data_type: varchar
         tests:
           - not_null
@@ -180,7 +185,7 @@ models:
               to: ref('dim_product')
               field: product_id
       - name: supplier_id
-        description: "Foreign key to supplier dimension"
+        description: Foreign key to supplier dimension
         data_type: varchar
         tests:
           - not_null
@@ -188,7 +193,7 @@ models:
               to: ref('dim_supplier')
               field: supplier_id
       - name: stock_qty
-        description: "Current stock quantity"
+        description: Current stock quantity
         data_type: number
         tests:
           - not_null
@@ -196,32 +201,34 @@ models:
               min_value: 0
               inclusive: true
       - name: warehouse_location
-        description: "Warehouse location in uppercase format"
+        description: Warehouse location in uppercase format
         data_type: varchar
         tests:
           - not_null
       - name: snapshot_date
-        description: "Date of inventory snapshot"
+        description: Date of inventory snapshot
         data_type: date
         tests:
           - not_null
       - name: is_latest
-        description: "Flag indicating latest record per product and supplier"
+        description: Flag indicating latest record per product and supplier
         data_type: boolean
         tests:
           - not_null
+          - accepted_values:
+              values: [true, false]
 
   - name: fact_order
-    description: "Fact table containing order information"
+    description: Fact table containing order header information
     columns:
       - name: order_id
-        description: "Unique identifier for each order"
+        description: Unique identifier for each order
         data_type: varchar
         tests:
-          - not_null
           - unique
+          - not_null
       - name: customer_id
-        description: "Foreign key to customer dimension"
+        description: Foreign key to customer dimension
         data_type: varchar
         tests:
           - not_null
@@ -229,19 +236,19 @@ models:
               to: ref('dim_customer')
               field: customer_id
       - name: order_date
-        description: "Date when order was placed"
+        description: Date when order was placed
         data_type: date
         tests:
           - not_null
       - name: order_status
-        description: "Current status of the order"
+        description: Current status of the order
         data_type: varchar
         tests:
           - not_null
           - accepted_values:
               values: ['PENDING', 'CANCELLED', 'SHIPPED', 'DELIVERED']
       - name: total_amount
-        description: "Total order amount"
+        description: Total order amount
         data_type: number
         tests:
           - not_null
@@ -250,16 +257,16 @@ models:
               inclusive: false
 
   - name: fact_order_item
-    description: "Fact table containing order item details"
+    description: Fact table containing order line item details
     columns:
       - name: order_item_id
-        description: "Unique identifier for each order item"
+        description: Unique identifier for each order item
         data_type: varchar
         tests:
-          - not_null
           - unique
+          - not_null
       - name: order_id
-        description: "Foreign key to order fact table"
+        description: Foreign key to order fact table
         data_type: varchar
         tests:
           - not_null
@@ -267,7 +274,7 @@ models:
               to: ref('fact_order')
               field: order_id
       - name: product_id
-        description: "Foreign key to product dimension"
+        description: Foreign key to product dimension
         data_type: varchar
         tests:
           - not_null
@@ -275,7 +282,7 @@ models:
               to: ref('dim_product')
               field: product_id
       - name: quantity
-        description: "Quantity of product ordered"
+        description: Quantity of product ordered
         data_type: number
         tests:
           - not_null
@@ -283,7 +290,7 @@ models:
               min_value: 0
               inclusive: false
       - name: unit_price
-        description: "Price per unit of product"
+        description: Price per unit of product
         data_type: number
         tests:
           - not_null
@@ -291,7 +298,7 @@ models:
               min_value: 0
               inclusive: false
       - name: extended_amount
-        description: "Total amount for line item (quantity * unit_price)"
+        description: Calculated amount before discount (quantity * unit_price)
         data_type: number
         tests:
           - not_null
@@ -299,7 +306,7 @@ models:
               min_value: 0
               inclusive: false
       - name: discount_amount
-        description: "Discount amount allocated to this line item"
+        description: Proportionally allocated discount amount
         data_type: number
         tests:
           - not_null
@@ -307,7 +314,7 @@ models:
               min_value: 0
               inclusive: true
       - name: net_amount
-        description: "Net amount after discount (extended_amount - discount_amount)"
+        description: Final amount after discount (extended_amount - discount_amount)
         data_type: number
         tests:
           - not_null
@@ -316,16 +323,16 @@ models:
               inclusive: false
 
   - name: fact_payment
-    description: "Fact table containing payment information"
+    description: Fact table containing payment transaction details
     columns:
       - name: payment_id
-        description: "Unique identifier for each payment"
+        description: Unique identifier for each payment
         data_type: varchar
         tests:
-          - not_null
           - unique
+          - not_null
       - name: order_id
-        description: "Foreign key to order fact table"
+        description: Foreign key to order fact table
         data_type: varchar
         tests:
           - not_null
@@ -333,19 +340,19 @@ models:
               to: ref('fact_order')
               field: order_id
       - name: payment_date
-        description: "Date when payment was made"
+        description: Date when payment was processed
         data_type: date
         tests:
           - not_null
       - name: payment_method
-        description: "Method used for payment"
+        description: Method used for payment
         data_type: varchar
         tests:
           - not_null
           - accepted_values:
               values: ['CARD', 'UPI', 'COD', 'NETBANKING']
       - name: amount
-        description: "Payment amount"
+        description: Payment amount
         data_type: number
         tests:
           - not_null
@@ -353,22 +360,24 @@ models:
               min_value: 0
               inclusive: false
       - name: is_fully_applied
-        description: "Flag indicating if total payments cover order amount"
+        description: Flag indicating if total payments cover order amount
         data_type: boolean
         tests:
           - not_null
+          - accepted_values:
+              values: [true, false]
 
   - name: fact_shipment
-    description: "Fact table containing shipment information"
+    description: Fact table containing shipment tracking information
     columns:
       - name: shipment_id
-        description: "Unique identifier for each shipment"
+        description: Unique identifier for each shipment
         data_type: varchar
         tests:
-          - not_null
           - unique
+          - not_null
       - name: order_id
-        description: "Foreign key to order fact table"
+        description: Foreign key to order fact table
         data_type: varchar
         tests:
           - not_null
@@ -376,12 +385,12 @@ models:
               to: ref('fact_order')
               field: order_id
       - name: shipped_date
-        description: "Date when order was shipped"
+        description: Date when order was shipped
         data_type: date
         tests:
           - not_null
       - name: days_to_ship
-        description: "Number of days between order and shipment"
+        description: Number of days between order and shipment
         data_type: number
         tests:
           - not_null
@@ -389,12 +398,12 @@ models:
               min_value: 0
               inclusive: true
       - name: carrier
-        description: "Shipping carrier in uppercase format"
+        description: Shipping carrier in uppercase format
         data_type: varchar
         tests:
           - not_null
       - name: tracking_number
-        description: "Shipment tracking number"
+        description: Shipment tracking number
         data_type: varchar
         tests:
           - not_null
