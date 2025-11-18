@@ -28,16 +28,16 @@ with source_suppliers as (
 
 transformed_suppliers as (
     select
-        source_suppliers.supplier_id,
-        trim(initcap(source_suppliers.supplier_name)) as supplier_name,
+        suppliers.supplier_id,
+        trim(initcap(suppliers.supplier_name)) as supplier_name,
         case 
-            when regexp_like(lower(trim(source_suppliers.contact_email)), '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$')
-            then lower(trim(source_suppliers.contact_email))
+            when regexp_like(lower(trim(suppliers.contact_email)), '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$')
+            then lower(trim(suppliers.contact_email))
             else null
         end as contact_email,
-        upper(source_suppliers.country) as country,
-        coalesce(source_suppliers.active_flag, false) as is_active
-    from source_suppliers
+        upper(suppliers.country) as country,
+        coalesce(suppliers.active_flag, false) as is_active
+    from source_suppliers as suppliers
 )
 
 select * from transformed_suppliers
