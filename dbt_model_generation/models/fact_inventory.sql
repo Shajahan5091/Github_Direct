@@ -23,56 +23,47 @@ with source_inventory as (
     from {{ source('dwh_raw', 'inventory') }}
 ),
 
-inventory_with_lookups as (
+inventory_with_flags as (
     select 
-        -- Product ID with unknown handling
-        coalesce(source_inventory.product_id, '0') as product_id,
-        
-        -- Supplier ID with unknown handling  
-        coalesce(source_inventory.supplier_id, '0') as supplier_id,
-        
-        -- Stock quantity with negative value handling
+        source_inventory.product_id,
+        source_inventory.supplier_id,
+        source_inventory.stock_qty,
+        source_inventory.warehouse_location,
+        source_inventory.last_updated,
+        -- Flag latest record per product_id + supplier_id combination
         case 
-            when source_inventory.stock_qty < 0 then null
-            else source_inventory.stock_qty
-        end as stock_qty,
-        
-        -- Warehouse location in uppercase
-        upper(source_inventory.warehouse_location) as warehouse_location,
-        
-        -- Convert timestamp to date for snapshot
-        date(source_inventory.last_updated) as snapshot_date,
-        
-        -- Original timestamp for latest flag calculation
-        source_inventory.last_updated as last_updated_timestamp
-        
+            when source_inventory.last_updated = max(source_inventory.last_updated) 
+                over (partition by source_inventory.product_id, source_inventory.supplier_id)
+            then true
+            else false
+        end as is_latest_flag
     from source_inventory
 ),
 
-inventory_with_latest_flag as (
+final_inventory as (
     select 
-        inventory_with_lookups.product_id,
-        inventory_with_lookups.supplier_id,
-        inventory_with_lookups.stock_qty,
-        inventory_with_lookups.warehouse_location,
-        inventory_with_lookups.snapshot_date,
+        -- Product ID lookup with unknown handling
+        coalesce(inventory_with_flags.product_id, '0') as product_id,
         
-        -- Flag to identify latest record per product and supplier
+        -- Supplier ID lookup with unknown handling  
+        coalesce(inventory_with_flags.supplier_id, '0') as supplier_id,
+        
+        -- Stock quantity with negative value handling
         case 
-            when inventory_with_lookups.last_updated_timestamp = max(inventory_with_lookups.last_updated_timestamp) 
-                 over (partition by inventory_with_lookups.product_id, inventory_with_lookups.supplier_id)
-            then true
-            else false
-        end as is_latest
+            when inventory_with_flags.stock_qty < 0 then null
+            else inventory_with_flags.stock_qty
+        end as stock_qty,
         
-    from inventory_with_lookups
+        -- Warehouse location in uppercase
+        upper(inventory_with_flags.warehouse_location) as warehouse_location,
+        
+        -- Convert timestamp to date for snapshot
+        date(inventory_with_flags.last_updated) as snapshot_date,
+        
+        -- Latest record flag
+        inventory_with_flags.is_latest_flag as is_latest
+        
+    from inventory_with_flags
 )
 
-select 
-    product_id,
-    supplier_id,
-    stock_qty,
-    warehouse_location,
-    snapshot_date,
-    is_latest
-from inventory_with_latest_flag
+select * from final_inventory
