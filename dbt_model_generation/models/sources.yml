@@ -63,7 +63,7 @@ sources:
             description: "Timestamp of last inventory update"
 
       - name: order_items
-        description: "Individual line items within orders"
+        description: "Individual items within orders"
         columns:
           - name: order_item_id
             description: "Unique identifier for order item"
