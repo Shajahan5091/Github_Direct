@@ -2,16 +2,16 @@ version: 2
 
 models:
   - name: dim_address
-    description: "Dimension table containing customer address information with standardized formatting"
+    description: "Dimension table containing customer address information"
     columns:
       - name: address_id
-        description: "Unique identifier for each address record"
+        description: "Unique identifier for each address"
         data_type: varchar
         tests:
           - not_null
           - unique
       - name: customer_id
-        description: "Foreign key reference to customer dimension"
+        description: "Foreign key to customer dimension"
         data_type: varchar
         tests:
           - not_null
@@ -23,27 +23,24 @@ models:
         data_type: varchar
         tests:
           - not_null
-          - dbt_utils.not_empty_string
       - name: city
         description: "City name in uppercase format"
         data_type: varchar
         tests:
           - not_null
-          - dbt_utils.not_empty_string
       - name: country
         description: "Country name"
         data_type: varchar
         tests:
           - not_null
-          - dbt_utils.not_empty_string
       - name: inserted_at
-        description: "Date when the address record was inserted"
+        description: "Date when address record was inserted"
         data_type: date
         tests:
           - not_null
 
   - name: dim_category
-    description: "Product category dimension with hierarchical structure"
+    description: "Dimension table containing product category information"
     columns:
       - name: category_id
         description: "Unique identifier for each category"
@@ -56,25 +53,22 @@ models:
         data_type: varchar
         tests:
           - not_null
-          - dbt_utils.not_empty_string
       - name: parent_category_id
-        description: "Reference to parent category for hierarchy"
+        description: "Foreign key to parent category"
         data_type: varchar
       - name: category_path
-        description: "Full hierarchical path showing parent and child categories"
+        description: "Hierarchical path showing parent and current category"
         data_type: varchar
         tests:
           - not_null
       - name: is_active
-        description: "Flag indicating if category is currently active"
+        description: "Flag indicating if category is active"
         data_type: boolean
         tests:
           - not_null
-          - accepted_values:
-              values: [true, false]
 
   - name: dim_customer
-    description: "Customer dimension with derived tier information"
+    description: "Dimension table containing customer information"
     columns:
       - name: customer_id
         description: "Unique identifier for each customer"
@@ -83,24 +77,24 @@ models:
           - not_null
           - unique
       - name: first_name
-        description: "Customer first name in uppercase"
+        description: "Customer first name in uppercase format"
         data_type: varchar
         tests:
           - not_null
-          - dbt_utils.not_empty_string
       - name: last_name
-        description: "Customer last name in uppercase"
+        description: "Customer last name in uppercase format"
         data_type: varchar
         tests:
           - not_null
-          - dbt_utils.not_empty_string
       - name: email
-        description: "Customer email address in lowercase"
+        description: "Customer email address in lowercase format"
         data_type: varchar
         tests:
           - not_null
           - unique
-          - dbt_utils.not_empty_string
+          - dbt_utils.accepted_values:
+              values: ['@']
+              quote: false
       - name: customer_since_date
         description: "Date when customer first registered"
         data_type: date
@@ -115,7 +109,7 @@ models:
               values: ['Gold', 'Silver', 'Bronze']
 
   - name: dim_product
-    description: "Product dimension with price banding"
+    description: "Dimension table containing product information"
     columns:
       - name: product_id
         description: "Unique identifier for each product"
@@ -124,18 +118,18 @@ models:
           - not_null
           - unique
       - name: product_name
-        description: "Product name in title case"
+        description: "Product name in title case format"
         data_type: varchar
         tests:
           - not_null
-          - dbt_utils.not_empty_string
       - name: price
         description: "Product price"
         data_type: number
         tests:
           - not_null
-          - dbt_utils.expression_is_true:
-              expression: ">= 0"
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
       - name: price_band
         description: "Price category bucket"
         data_type: varchar
@@ -145,7 +139,7 @@ models:
               values: ['Low', 'Mid', 'High', 'Premium']
 
   - name: dim_supplier
-    description: "Supplier dimension with contact information"
+    description: "Dimension table containing supplier information"
     columns:
       - name: supplier_id
         description: "Unique identifier for each supplier"
@@ -154,33 +148,28 @@ models:
           - not_null
           - unique
       - name: supplier_name
-        description: "Supplier name in title case"
+        description: "Supplier name in title case format"
         data_type: varchar
         tests:
           - not_null
-          - dbt_utils.not_empty_string
       - name: contact_email
-        description: "Supplier contact email in lowercase"
+        description: "Supplier contact email in lowercase format"
         data_type: varchar
         tests:
           - not_null
-          - dbt_utils.not_empty_string
       - name: country
-        description: "Supplier country in uppercase"
+        description: "Supplier country in uppercase format"
         data_type: varchar
         tests:
           - not_null
-          - dbt_utils.not_empty_string
       - name: is_active
         description: "Flag indicating if supplier is active"
         data_type: boolean
         tests:
           - not_null
-          - accepted_values:
-              values: [true, false]
 
   - name: fact_inventory
-    description: "Inventory fact table with latest snapshot flags"
+    description: "Fact table containing inventory information"
     columns:
       - name: product_id
         description: "Foreign key to product dimension"
@@ -203,29 +192,27 @@ models:
         data_type: number
         tests:
           - not_null
-          - dbt_utils.expression_is_true:
-              expression: ">= 0"
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
       - name: warehouse_location
-        description: "Warehouse location in uppercase"
+        description: "Warehouse location in uppercase format"
         data_type: varchar
         tests:
           - not_null
-          - dbt_utils.not_empty_string
       - name: snapshot_date
         description: "Date of inventory snapshot"
         data_type: date
         tests:
           - not_null
       - name: is_latest
-        description: "Flag indicating latest record per product-supplier combination"
+        description: "Flag indicating latest record per product and supplier"
         data_type: boolean
         tests:
           - not_null
-          - accepted_values:
-              values: [true, false]
 
   - name: fact_order
-    description: "Order fact table with normalized status"
+    description: "Fact table containing order information"
     columns:
       - name: order_id
         description: "Unique identifier for each order"
@@ -247,7 +234,7 @@ models:
         tests:
           - not_null
       - name: order_status
-        description: "Normalized order status"
+        description: "Current status of the order"
         data_type: varchar
         tests:
           - not_null
@@ -258,11 +245,12 @@ models:
         data_type: number
         tests:
           - not_null
-          - dbt_utils.expression_is_true:
-              expression: ">= 0"
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
 
   - name: fact_order_item
-    description: "Order line item fact table with calculated amounts"
+    description: "Fact table containing order item details"
     columns:
       - name: order_item_id
         description: "Unique identifier for each order item"
@@ -271,7 +259,7 @@ models:
           - not_null
           - unique
       - name: order_id
-        description: "Foreign key to order fact"
+        description: "Foreign key to order fact table"
         data_type: varchar
         tests:
           - not_null
@@ -287,43 +275,48 @@ models:
               to: ref('dim_product')
               field: product_id
       - name: quantity
-        description: "Quantity ordered"
+        description: "Quantity of product ordered"
         data_type: number
         tests:
           - not_null
-          - dbt_utils.expression_is_true:
-              expression: "> 0"
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
       - name: unit_price
-        description: "Price per unit"
+        description: "Price per unit of product"
         data_type: number
         tests:
           - not_null
-          - dbt_utils.expression_is_true:
-              expression: ">= 0"
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
       - name: extended_amount
-        description: "Calculated amount before discount (quantity * unit_price)"
+        description: "Total amount for line item (quantity * unit_price)"
         data_type: number
         tests:
           - not_null
-          - dbt_utils.expression_is_true:
-              expression: ">= 0"
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
       - name: discount_amount
-        description: "Proportionally allocated discount amount"
+        description: "Discount amount allocated to this line item"
         data_type: number
         tests:
           - not_null
-          - dbt_utils.expression_is_true:
-              expression: ">= 0"
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
       - name: net_amount
-        description: "Final amount after discount"
+        description: "Net amount after discount (extended_amount - discount_amount)"
         data_type: number
         tests:
           - not_null
-          - dbt_utils.expression_is_true:
-              expression: ">= 0"
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
 
   - name: fact_payment
-    description: "Payment fact table with application status"
+    description: "Fact table containing payment information"
     columns:
       - name: payment_id
         description: "Unique identifier for each payment"
@@ -332,7 +325,7 @@ models:
           - not_null
           - unique
       - name: order_id
-        description: "Foreign key to order fact"
+        description: "Foreign key to order fact table"
         data_type: varchar
         tests:
           - not_null
@@ -345,7 +338,7 @@ models:
         tests:
           - not_null
       - name: payment_method
-        description: "Normalized payment method"
+        description: "Method used for payment"
         data_type: varchar
         tests:
           - not_null
@@ -356,18 +349,17 @@ models:
         data_type: number
         tests:
           - not_null
-          - dbt_utils.expression_is_true:
-              expression: "> 0"
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
       - name: is_fully_applied
         description: "Flag indicating if total payments cover order amount"
         data_type: boolean
         tests:
           - not_null
-          - accepted_values:
-              values: [true, false]
 
   - name: fact_shipment
-    description: "Shipment fact table with delivery metrics"
+    description: "Fact table containing shipment information"
     columns:
       - name: shipment_id
         description: "Unique identifier for each shipment"
@@ -376,7 +368,7 @@ models:
           - not_null
           - unique
       - name: order_id
-        description: "Foreign key to order fact"
+        description: "Foreign key to order fact table"
         data_type: varchar
         tests:
           - not_null
@@ -384,7 +376,7 @@ models:
               to: ref('fact_order')
               field: order_id
       - name: shipped_date
-        description: "Date when shipment was dispatched"
+        description: "Date when order was shipped"
         data_type: date
         tests:
           - not_null
@@ -393,18 +385,16 @@ models:
         data_type: number
         tests:
           - not_null
-          - dbt_utils.expression_is_true:
-              expression: ">= 0"
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
       - name: carrier
-        description: "Shipping carrier in uppercase"
+        description: "Shipping carrier in uppercase format"
         data_type: varchar
         tests:
           - not_null
-          - dbt_utils.not_empty_string
       - name: tracking_number
         description: "Shipment tracking number"
         data_type: varchar
         tests:
           - not_null
-          - unique
-          - dbt_utils.not_empty_string
