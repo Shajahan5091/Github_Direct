@@ -39,7 +39,7 @@ inventory_with_flags as (
 
 final as (
     select 
-        -- Product ID with lookup and unknown handling
+        -- Product ID with lookup handling
         coalesce(
             case 
                 when dim_product.product_id is not null then inventory_with_flags.product_id
@@ -48,7 +48,7 @@ final as (
             '0'
         ) as product_id,
         
-        -- Supplier ID with lookup and unknown handling
+        -- Supplier ID with lookup handling
         coalesce(
             case 
                 when dim_supplier.supplier_id is not null then inventory_with_flags.supplier_id
