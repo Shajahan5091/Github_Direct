@@ -1,8 +1,8 @@
 {#
 ------------------------------------------------------------------------
 MODEL NAME    : fact_shipment
-TARGET TABLE  : BSL_MA.DWH_MA.FACT_SHIPMENT
-SOURCE TABLES : BSL_RAW.DWH_RAW.SHIPMENTS, BSL_RAW.DWH_RAW.ORDERS
+TARGET TABLE  : bsl_ma.dwh_ma.fact_shipment
+SOURCE TABLES : bsl_raw.dwh_raw.shipments, bsl_raw.dwh_raw.orders
 DESCRIPTION   : Fact table for shipment data with order details and 
                 calculated days to ship metrics
 PREREQUISITES : Source tables shipments and orders must be available
@@ -22,7 +22,7 @@ with source_shipments as (
         tracking_number
     from {{ source('dwh_raw', 'shipments') }}
     {% if is_incremental() %}
-        where last_updated > (select max(last_updated) from {{ this }})
+        where shipped_date > (select max(shipped_date) from {{ this }})
     {% endif %}
 ),
 
@@ -40,7 +40,8 @@ shipments_with_orders as (
         shipments.shipped_date::date as shipped_date,
         upper(shipments.carrier) as carrier,
         shipments.tracking_number,
-        orders.order_date
+        orders.order_date,
+        greatest(0, datediff('day', orders.order_date::date, shipments.shipped_date::date)) as days_to_ship
     from source_shipments as shipments
     inner join source_orders as orders
         on shipments.order_id = orders.order_id
@@ -51,9 +52,9 @@ final as (
         shipment_id,
         order_id,
         shipped_date,
-        greatest(0, datediff('day', order_date::date, shipped_date)) as days_to_ship,
         carrier,
         tracking_number,
+        days_to_ship,
         current_timestamp() as last_updated
     from shipments_with_orders
 )
