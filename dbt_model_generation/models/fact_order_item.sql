@@ -43,7 +43,7 @@ validated_order_items as (
         on oi.order_id = ord.order_id
 ),
 
--- Handle product_id lookup and set to '0' if missing -- auto corrected using semantic file
+-- Check if product exists in dim_product, set to 0 if missing -- auto corrected using semantic file
 product_validated_items as (
     select 
         voi.order_item_id,
@@ -57,7 +57,7 @@ product_validated_items as (
 ),
 
 -- Calculate extended amount and other derived fields
-final_calculations as (
+calculated_order_items as (
     select 
         pvi.order_item_id,
         pvi.order_id,
@@ -65,27 +65,40 @@ final_calculations as (
         round(pvi.quantity) as quantity, -- Ensure integer semantics
         pvi.unit_price,
         round(pvi.quantity) * coalesce(pvi.unit_price, 0) as extended_amount,
-        0.00 as discount_amount, -- Set to 0 as no discount context available
+        0.00 as discount_amount, -- Set 0 if no discount context
         current_timestamp() as last_updated
     from product_validated_items pvi
+),
+
+-- Calculate net amount ensuring non-negative values
+final_order_items as (
+    select 
+        coi.order_item_id,
+        coi.order_id,
+        coi.product_id,
+        coi.quantity,
+        coi.unit_price,
+        coi.extended_amount,
+        coi.discount_amount,
+        greatest(coi.extended_amount - coi.discount_amount, 0) as net_amount, -- Floor at 0
+        coi.last_updated
+    from calculated_order_items coi
 )
 
 select 
-    fc.order_item_id,
-    fc.order_id,
-    fc.product_id,
-    fc.quantity,
-    fc.unit_price,
-    fc.extended_amount,
-    fc.discount_amount,
-    greatest(fc.extended_amount - fc.discount_amount, 0) as net_amount, -- Ensure non-negative
-    fc.last_updated
-from final_calculations fc
-
+    order_item_id,
+    order_id,
+    product_id,
+    quantity,
+    unit_price,
+    extended_amount,
+    discount_amount,
+    net_amount,
+    last_updated
+from final_order_items
 {% if var('models')['backfill_flag'] == 'true' %}
-where fc.last_updated between '{{ var("models")["backfill_start_date"] }}' and '{{ var("models")["backfill_end_date"] }}'
+where last_updated between '{{ var("models")["backfill_start_date"] }}' and '{{ var("models")["backfill_end_date"] }}'
 {% endif %}
-
 {% if is_incremental() %}
-where fc.last_updated > (select max(last_updated) from {{ this }})
+where last_updated > (select max(last_updated) from {{ this }})
 {% endif %}
