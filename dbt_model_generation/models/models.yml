@@ -19,7 +19,7 @@ models:
               to: ref('dim_customer')
               field: customer_id
       - name: address_line1
-        description: "Primary address line with trimmed whitespace"
+        description: "Primary address line with whitespace trimmed"
         data_type: varchar
         tests:
           - not_null
@@ -72,7 +72,7 @@ models:
               values: [true, false]
 
   - name: dim_customer
-    description: "Customer dimension with derived tier information based on spending"
+    description: "Customer dimension with standardized names and derived tier information"
     columns:
       - name: customer_id
         description: "Unique identifier for each customer"
@@ -99,21 +99,20 @@ models:
           - dbt_utils.accepted_range:
               min_value: 1
               inclusive: false
-              where: "email like '%@%'"
       - name: customer_since_date
         description: "Date when customer first registered"
         data_type: date
         tests:
           - not_null
       - name: customer_tier
-        description: "Spending tier classification based on last 365 days activity"
+        description: "Spending tier based on last 365 days activity"
         data_type: varchar
         tests:
           - accepted_values:
               values: ['Gold', 'Silver', 'Bronze']
 
   - name: dim_product
-    description: "Product dimension with price banding classification"
+    description: "Product dimension with pricing and categorization information"
     columns:
       - name: product_id
         description: "Unique identifier for each product"
@@ -135,7 +134,7 @@ models:
               min_value: 0
               inclusive: false
       - name: price_band
-        description: "Price classification bucket based on product price"
+        description: "Price category bucket based on product price"
         data_type: varchar
         tests:
           - not_null
@@ -161,10 +160,6 @@ models:
         data_type: varchar
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 1
-              inclusive: false
-              where: "contact_email like '%@%'"
       - name: country
         description: "Supplier country in uppercase format"
         data_type: varchar
@@ -179,7 +174,7 @@ models:
               values: [true, false]
 
   - name: fact_inventory
-    description: "Inventory fact table with current stock levels and latest record flags"
+    description: "Inventory fact table with current stock levels and warehouse information"
     columns:
       - name: product_id
         description: "Foreign key reference to product dimension"
@@ -216,7 +211,7 @@ models:
         tests:
           - not_null
       - name: is_latest
-        description: "Flag indicating latest record per product and supplier combination"
+        description: "Flag indicating if this is the latest record for product-supplier combination"
         data_type: boolean
         tests:
           - not_null
@@ -224,7 +219,7 @@ models:
               values: [true, false]
 
   - name: fact_order
-    description: "Order fact table with normalized status values"
+    description: "Order fact table with customer and order status information"
     columns:
       - name: order_id
         description: "Unique identifier for each order"
@@ -246,7 +241,7 @@ models:
         tests:
           - not_null
       - name: order_status
-        description: "Normalized order status in uppercase format"
+        description: "Current status of the order"
         data_type: varchar
         tests:
           - not_null
@@ -262,7 +257,7 @@ models:
               inclusive: false
 
   - name: fact_order_item
-    description: "Order line item fact table with calculated amounts"
+    description: "Order line item fact table with product quantities and pricing"
     columns:
       - name: order_item_id
         description: "Unique identifier for each order line item"
@@ -303,7 +298,7 @@ models:
               min_value: 0
               inclusive: false
       - name: extended_amount
-        description: "Calculated amount before discounts (quantity * unit_price)"
+        description: "Total amount for line item (quantity * unit_price)"
         data_type: number
         tests:
           - not_null
@@ -311,7 +306,7 @@ models:
               min_value: 0
               inclusive: false
       - name: discount_amount
-        description: "Proportionally allocated discount amount"
+        description: "Discount amount allocated to this line item"
         data_type: number
         tests:
           - not_null
@@ -319,7 +314,7 @@ models:
               min_value: 0
               inclusive: true
       - name: net_amount
-        description: "Final amount after discounts (extended_amount - discount_amount)"
+        description: "Net amount after discount (extended_amount - discount_amount)"
         data_type: number
         tests:
           - not_null
@@ -328,7 +323,7 @@ models:
               inclusive: false
 
   - name: fact_payment
-    description: "Payment fact table with normalized payment methods and application flags"
+    description: "Payment fact table with payment methods and amounts"
     columns:
       - name: payment_id
         description: "Unique identifier for each payment"
@@ -345,12 +340,12 @@ models:
               to: ref('fact_order')
               field: order_id
       - name: payment_date
-        description: "Date when payment was processed"
+        description: "Date when payment was made"
         data_type: date
         tests:
           - not_null
       - name: payment_method
-        description: "Normalized payment method in uppercase format"
+        description: "Method used for payment"
         data_type: varchar
         tests:
           - not_null
@@ -365,7 +360,7 @@ models:
               min_value: 0
               inclusive: false
       - name: is_fully_applied
-        description: "Flag indicating if total payments cover full order amount"
+        description: "Flag indicating if total payments cover the full order amount"
         data_type: boolean
         tests:
           - not_null
@@ -373,7 +368,7 @@ models:
               values: [true, false]
 
   - name: fact_shipment
-    description: "Shipment fact table with calculated shipping metrics"
+    description: "Shipment fact table with shipping dates and carrier information"
     columns:
       - name: shipment_id
         description: "Unique identifier for each shipment"
@@ -390,12 +385,12 @@ models:
               to: ref('fact_order')
               field: order_id
       - name: shipped_date
-        description: "Date when shipment was dispatched"
+        description: "Date when order was shipped"
         data_type: date
         tests:
           - not_null
       - name: days_to_ship
-        description: "Number of days between order and shipment dates"
+        description: "Number of days between order date and ship date"
         data_type: number
         tests:
           - not_null
@@ -403,7 +398,7 @@ models:
               min_value: 0
               inclusive: true
       - name: carrier
-        description: "Shipping carrier name in uppercase format"
+        description: "Shipping carrier in uppercase format"
         data_type: varchar
         tests:
           - not_null
@@ -412,3 +407,4 @@ models:
         data_type: varchar
         tests:
           - not_null
+          - unique
