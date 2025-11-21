@@ -11,7 +11,7 @@ models:
           - not_null
           - unique
       - name: customer_id
-        description: "Foreign key reference to customer dimension"
+        description: "Foreign key to customer dimension"
         data_type: varchar
         tests:
           - not_null
@@ -19,7 +19,7 @@ models:
               to: ref('dim_customer')
               field: customer_id
       - name: address_line1
-        description: "Primary address line with whitespace trimmed"
+        description: "Primary address line with trimmed whitespace"
         data_type: varchar
         tests:
           - not_null
@@ -58,13 +58,18 @@ models:
           - not_null
           - dbt_utils.not_empty_string
       - name: parent_category_id
-        description: "Reference to parent category for hierarchical structure"
+        description: "Foreign key to parent category"
         data_type: varchar
+        tests:
+          - relationships:
+              to: ref('dim_category')
+              field: category_id
       - name: category_path
-        description: "Hierarchical path showing parent and current category"
+        description: "Hierarchical path showing parent and child category relationship"
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.not_empty_string
       - name: is_active
         description: "Flag indicating if category is currently active"
         data_type: boolean
@@ -147,7 +152,7 @@ models:
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: price_band
-        description: "Price category bucket based on product price"
+        description: "Price category bucket"
         data_type: varchar
         tests:
           - not_null
@@ -200,10 +205,10 @@ models:
           - not_null
 
   - name: fact_inventory
-    description: "Fact table containing inventory stock information"
+    description: "Fact table containing inventory snapshot data"
     columns:
       - name: product_id
-        description: "Foreign key reference to product dimension"
+        description: "Foreign key to product dimension"
         data_type: varchar
         tests:
           - not_null
@@ -211,7 +216,7 @@ models:
               to: ref('dim_product')
               field: product_id
       - name: supplier_id
-        description: "Foreign key reference to supplier dimension"
+        description: "Foreign key to supplier dimension"
         data_type: varchar
         tests:
           - not_null
@@ -259,7 +264,7 @@ models:
           - not_null
           - unique
       - name: customer_id
-        description: "Foreign key reference to customer dimension"
+        description: "Foreign key to customer dimension"
         data_type: varchar
         tests:
           - not_null
@@ -301,7 +306,7 @@ models:
           - not_null
           - unique
       - name: order_id
-        description: "Foreign key reference to order fact table"
+        description: "Foreign key to order fact table"
         data_type: varchar
         tests:
           - not_null
@@ -309,7 +314,7 @@ models:
               to: ref('fact_order')
               field: order_id
       - name: product_id
-        description: "Foreign key reference to product dimension"
+        description: "Foreign key to product dimension"
         data_type: varchar
         tests:
           - not_null
@@ -338,7 +343,7 @@ models:
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: discount_amount
-        description: "Discount amount applied to this line item"
+        description: "Discount amount allocated to this line item"
         data_type: number
         tests:
           - not_null
@@ -367,7 +372,7 @@ models:
           - not_null
           - unique
       - name: order_id
-        description: "Foreign key reference to order fact table"
+        description: "Foreign key to order fact table"
         data_type: varchar
         tests:
           - not_null
@@ -416,7 +421,7 @@ models:
           - not_null
           - unique
       - name: order_id
-        description: "Foreign key reference to order fact table"
+        description: "Foreign key to order fact table"
         data_type: varchar
         tests:
           - not_null
