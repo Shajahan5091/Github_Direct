@@ -26,12 +26,6 @@ with source_payments as (
         amount,
         inserted_at -- auto corrected using semantic file
     from {{ source('dwh_raw', 'payments') }}
-    {% if var('models')['backfill_flag'] == 'true' %}
-        where inserted_at between '{{ var("models")["backfill_start_date"] }}' and '{{ var("models")["backfill_end_date"] }}'
-    {% endif %}
-    {% if is_incremental() %}
-        where inserted_at > (select max(inserted_at) from {{ this }})
-    {% endif %}
 ),
 
 source_orders as (
@@ -44,8 +38,8 @@ source_orders as (
 payment_aggregation as (
     select 
         payments.order_id,
-        sum(payments.amount) as total_payments_amount
-    from source_payments payments
+        sum(payments.amount) as total_payments
+    from source_payments as payments
     group by payments.order_id
 ),
 
@@ -66,16 +60,31 @@ transformed_payments as (
         end as amount,
         case 
             when orders.total_amount is null then false
-            when payment_agg.total_payments_amount >= orders.total_amount then true
+            when payment_agg.total_payments >= orders.total_amount then true
             else false
         end as is_fully_applied,
-        current_timestamp() as last_updated
-    from source_payments payments
-    left join source_orders orders 
+        payments.inserted_at as last_updated
+    from source_payments as payments
+    inner join source_orders as orders
         on payments.order_id = orders.order_id
-    left join payment_aggregation payment_agg 
+    left join payment_aggregation as payment_agg
         on payments.order_id = payment_agg.order_id
-    where orders.order_id is not null -- Skip payment if order not present
 )
 
-select * from transformed_payments
+select 
+    payment_id,
+    order_id,
+    payment_date,
+    payment_method,
+    amount,
+    is_fully_applied,
+    last_updated
+from transformed_payments
+
+{% if var('models')['backfill_flag'] == 'true' %}
+    where last_updated between '{{ var("models")["backfill_start_date"] }}' and '{{ var("models")["backfill_end_date"] }}'
+{% else %}
+    {% if is_incremental() %}
+        where last_updated > (select max(last_updated) from {{ this }})
+    {% endif %}
+{% endif %}
