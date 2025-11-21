@@ -9,12 +9,10 @@ config-version: 2
 profile: 'dbt_model_generation'
 
 vars:
-    dbt_model_generation:
-    models:
-        backfill_flag: "false"
-        backfill_start_date: "2022-01-01"
-        incremental_days: "366"
-        backfill_end_date: "2022-01-02"
+  models:
+    backfill_flag: "false"
+    backfill_start_date: "2022-01-01"
+    backfill_end_date: "2022-01-02"
 
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be
@@ -37,9 +35,6 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
     dbt_model_generation:
     # Config indicated by + and applies to all files under models/example/
-        +meta:
-        example:
-            +materialized: view
-    flags:
-    require_generic_test_arguments_property: true
+      example:
+        +materialized: view
         
