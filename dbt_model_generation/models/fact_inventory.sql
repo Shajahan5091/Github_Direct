@@ -32,11 +32,17 @@ with inventory_base as (
 
 inventory_transformed as (
     select
-        -- Product ID lookup with unknown handling
-        coalesce(inventory_base.product_id, '0') as product_id,
+        -- Product lookup with unknown handling
+        case 
+            when inventory_base.product_id is null then '0'
+            else inventory_base.product_id
+        end as product_id,
         
-        -- Supplier ID lookup with unknown handling  
-        coalesce(inventory_base.supplier_id, '0') as supplier_id,
+        -- Supplier lookup with unknown handling  
+        case 
+            when inventory_base.supplier_id is null then '0'
+            else inventory_base.supplier_id
+        end as supplier_id,
         
         -- Stock quantity with negative value handling
         case 
@@ -44,15 +50,14 @@ inventory_transformed as (
             else inventory_base.stock_qty
         end as stock_qty,
         
-        -- Warehouse location uppercase transformation
+        -- Uppercase warehouse location
         upper(inventory_base.warehouse_location) as warehouse_location,
         
         -- Convert timestamp to date for snapshot
         date(inventory_base.last_updated) as snapshot_date,
         
-        -- Original timestamp fields
         inventory_base.last_updated,
-        inventory_base.inserted_at
+        inventory_base.inserted_at as last_updated_timestamp
     from inventory_base
 ),
 
@@ -72,7 +77,8 @@ inventory_with_latest_flag as (
             else false
         end as is_latest,
         
-        inventory_transformed.inserted_at as last_updated
+        inventory_transformed.last_updated_timestamp,
+        current_timestamp() as last_updated
     from inventory_transformed
 )
 
@@ -83,5 +89,6 @@ select
     final_inventory.warehouse_location,
     final_inventory.snapshot_date,
     final_inventory.is_latest,
+    final_inventory.last_updated_timestamp,
     final_inventory.last_updated
 from inventory_with_latest_flag as final_inventory
