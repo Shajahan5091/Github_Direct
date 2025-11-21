@@ -104,8 +104,8 @@ models:
         data_type: varchar
         tests:
           - not_null
-          - dbt_utils.not_empty_string
           - unique
+          - dbt_utils.not_empty_string
       - name: customer_since_date
         description: "Date when customer first registered"
         data_type: date
@@ -200,7 +200,7 @@ models:
           - not_null
 
   - name: fact_inventory
-    description: "Fact table containing inventory snapshot data"
+    description: "Fact table containing inventory stock information"
     columns:
       - name: product_id
         description: "Foreign key reference to product dimension"
@@ -331,21 +331,21 @@ models:
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: extended_amount
-        description: "Total amount for line item (quantity * unit_price)"
+        description: "Total amount before discount (quantity * unit_price)"
         data_type: number
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: discount_amount
-        description: "Discount amount allocated to this line item"
+        description: "Discount amount applied to this line item"
         data_type: number
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: net_amount
-        description: "Net amount after discount (extended_amount - discount_amount)"
+        description: "Final amount after discount (extended_amount - discount_amount)"
         data_type: number
         tests:
           - not_null
@@ -358,7 +358,7 @@ models:
           - not_null
 
   - name: fact_payment
-    description: "Fact table containing payment information"
+    description: "Fact table containing payment transaction details"
     columns:
       - name: payment_id
         description: "Unique identifier for each payment"
@@ -394,7 +394,7 @@ models:
           - dbt_utils.expression_is_true:
               expression: "> 0"
       - name: is_fully_applied
-        description: "Flag indicating if total payments cover order amount"
+        description: "Flag indicating if total payments cover the full order amount"
         data_type: boolean
         tests:
           - not_null
@@ -407,7 +407,7 @@ models:
           - not_null
 
   - name: fact_shipment
-    description: "Fact table containing shipment information"
+    description: "Fact table containing shipment tracking information"
     columns:
       - name: shipment_id
         description: "Unique identifier for each shipment"
@@ -429,14 +429,14 @@ models:
         tests:
           - not_null
       - name: days_to_ship
-        description: "Number of days between order and shipment"
+        description: "Number of days between order date and shipment date"
         data_type: number
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: carrier
-        description: "Shipping carrier in uppercase format"
+        description: "Shipping carrier name in uppercase format"
         data_type: varchar
         tests:
           - not_null
@@ -446,6 +446,7 @@ models:
         data_type: varchar
         tests:
           - not_null
+          - unique
           - dbt_utils.not_empty_string
       - name: last_updated
         description: "Timestamp when record was last updated"
