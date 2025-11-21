@@ -4,7 +4,7 @@ sources:
   - name: dwh_raw
     database: bsl_raw
     schema: dwh_raw
-    description: Raw data warehouse tables containing source system data
+    description: Raw data warehouse source tables
     tables:
       - name: addresses
         description: This table stores information about customer addresses, including the unique address identifier, associated customer identifier, and address details such as street, city, and country, along with a timestamp for when the address was inserted into the system.
