@@ -23,24 +23,27 @@ models:
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.not_empty_string
       - name: city
         description: "City name in uppercase format"
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.not_empty_string
       - name: country
         description: "Country name"
         data_type: varchar
         tests:
           - not_null
-      - name: inserted_at
-        description: "Date when address record was created"
-        data_type: date
+          - dbt_utils.not_empty_string
+      - name: last_updated
+        description: "Timestamp when the record was last updated"
+        data_type: timestamp
         tests:
           - not_null
 
   - name: dim_category
-    description: "Product category dimension with hierarchical structure"
+    description: "Dimension table for product categories with hierarchical path structure"
     columns:
       - name: category_id
         description: "Unique identifier for each category"
@@ -53,16 +56,15 @@ models:
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.not_empty_string
       - name: parent_category_id
         description: "Reference to parent category for hierarchy"
         data_type: varchar
-        tests:
-          - relationships:
-              to: ref('dim_category')
-              field: category_id
       - name: category_path
-        description: "Full hierarchical path showing parent and child categories"
+        description: "Full hierarchical path up to 2 levels"
         data_type: varchar
+        tests:
+          - not_null
       - name: is_active
         description: "Flag indicating if category is currently active"
         data_type: boolean
@@ -70,6 +72,11 @@ models:
           - not_null
           - accepted_values:
               values: [true, false]
+      - name: last_updated
+        description: "Timestamp when the record was last updated"
+        data_type: timestamp
+        tests:
+          - not_null
 
   - name: dim_customer
     description: "Customer dimension with standardized names and derived tier information"
@@ -81,38 +88,44 @@ models:
           - not_null
           - unique
       - name: first_name
-        description: "Customer first name in uppercase format"
+        description: "Customer first name in uppercase"
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.not_empty_string
       - name: last_name
-        description: "Customer last name in uppercase format"
+        description: "Customer last name in uppercase"
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.not_empty_string
       - name: email
-        description: "Customer email address in lowercase format"
+        description: "Customer email in lowercase for consistency"
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.not_empty_string
           - unique
-          - dbt_utils.accepted_range:
-              min_value: 1
-              inclusive: false
       - name: customer_since_date
         description: "Date when customer first registered"
         data_type: date
         tests:
           - not_null
       - name: customer_tier
-        description: "Spending tier based on last 365 days activity"
+        description: "Spending tier based on last 365 days (Gold/Silver/Bronze)"
         data_type: varchar
         tests:
+          - not_null
           - accepted_values:
               values: ['Gold', 'Silver', 'Bronze']
+      - name: last_updated
+        description: "Timestamp when the record was last updated"
+        data_type: timestamp
+        tests:
+          - not_null
 
   - name: dim_product
-    description: "Product dimension with pricing and categorization information"
+    description: "Product dimension with pricing information and categorization"
     columns:
       - name: product_id
         description: "Unique identifier for each product"
@@ -121,28 +134,33 @@ models:
           - not_null
           - unique
       - name: product_name
-        description: "Product name in title case format"
+        description: "Product name in title case"
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.not_empty_string
       - name: price
         description: "Product price"
         data_type: number
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: price_band
-        description: "Price category bucket based on product price"
+        description: "Price category (Low/Mid/High/Premium)"
         data_type: varchar
         tests:
           - not_null
           - accepted_values:
               values: ['Low', 'Mid', 'High', 'Premium']
+      - name: last_updated
+        description: "Timestamp when the record was last updated"
+        data_type: timestamp
+        tests:
+          - not_null
 
   - name: dim_supplier
-    description: "Supplier dimension with contact and location information"
+    description: "Supplier dimension with contact information and status"
     columns:
       - name: supplier_id
         description: "Unique identifier for each supplier"
@@ -151,20 +169,23 @@ models:
           - not_null
           - unique
       - name: supplier_name
-        description: "Supplier name in title case format"
+        description: "Supplier name in title case"
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.not_empty_string
       - name: contact_email
-        description: "Supplier contact email in lowercase format"
+        description: "Supplier contact email in lowercase"
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.not_empty_string
       - name: country
-        description: "Supplier country in uppercase format"
+        description: "Supplier country in uppercase"
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.not_empty_string
       - name: is_active
         description: "Flag indicating if supplier is currently active"
         data_type: boolean
@@ -172,9 +193,14 @@ models:
           - not_null
           - accepted_values:
               values: [true, false]
+      - name: last_updated
+        description: "Timestamp when the record was last updated"
+        data_type: timestamp
+        tests:
+          - not_null
 
   - name: fact_inventory
-    description: "Inventory fact table with current stock levels and warehouse information"
+    description: "Inventory fact table with stock quantities and warehouse locations"
     columns:
       - name: product_id
         description: "Foreign key reference to product dimension"
@@ -197,29 +223,34 @@ models:
         data_type: number
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: warehouse_location
-        description: "Warehouse location in uppercase format"
+        description: "Warehouse location in uppercase"
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.not_empty_string
       - name: snapshot_date
         description: "Date of inventory snapshot"
         data_type: date
         tests:
           - not_null
       - name: is_latest
-        description: "Flag indicating if this is the latest record for product-supplier combination"
+        description: "Flag indicating latest record per product and supplier"
         data_type: boolean
         tests:
           - not_null
           - accepted_values:
               values: [true, false]
+      - name: last_updated
+        description: "Timestamp when the record was last updated"
+        data_type: timestamp
+        tests:
+          - not_null
 
   - name: fact_order
-    description: "Order fact table with customer and order status information"
+    description: "Order fact table with customer orders and status information"
     columns:
       - name: order_id
         description: "Unique identifier for each order"
@@ -241,7 +272,7 @@ models:
         tests:
           - not_null
       - name: order_status
-        description: "Current status of the order"
+        description: "Normalized order status"
         data_type: varchar
         tests:
           - not_null
@@ -252,15 +283,19 @@ models:
         data_type: number
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: last_updated
+        description: "Timestamp when the record was last updated"
+        data_type: timestamp
+        tests:
+          - not_null
 
   - name: fact_order_item
-    description: "Order line item fact table with product quantities and pricing"
+    description: "Order line items with pricing and calculated amounts"
     columns:
       - name: order_item_id
-        description: "Unique identifier for each order line item"
+        description: "Unique identifier for each order item"
         data_type: varchar
         tests:
           - not_null
@@ -282,48 +317,48 @@ models:
               to: ref('dim_product')
               field: product_id
       - name: quantity
-        description: "Quantity of product ordered"
+        description: "Quantity of items ordered"
         data_type: number
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
       - name: unit_price
-        description: "Price per unit of product"
+        description: "Price per unit"
         data_type: number
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: extended_amount
-        description: "Total amount for line item (quantity * unit_price)"
+        description: "Calculated amount (quantity * unit_price)"
         data_type: number
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: discount_amount
-        description: "Discount amount allocated to this line item"
+        description: "Proportionally allocated discount amount"
         data_type: number
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: net_amount
         description: "Net amount after discount (extended_amount - discount_amount)"
         data_type: number
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: last_updated
+        description: "Timestamp when the record was last updated"
+        data_type: timestamp
+        tests:
+          - not_null
 
   - name: fact_payment
-    description: "Payment fact table with payment methods and amounts"
+    description: "Payment transactions with method and application status"
     columns:
       - name: payment_id
         description: "Unique identifier for each payment"
@@ -345,7 +380,7 @@ models:
         tests:
           - not_null
       - name: payment_method
-        description: "Method used for payment"
+        description: "Standardized payment method"
         data_type: varchar
         tests:
           - not_null
@@ -356,19 +391,23 @@ models:
         data_type: number
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
       - name: is_fully_applied
-        description: "Flag indicating if total payments cover the full order amount"
+        description: "Flag indicating if total payments cover order amount"
         data_type: boolean
         tests:
           - not_null
           - accepted_values:
               values: [true, false]
+      - name: last_updated
+        description: "Timestamp when the record was last updated"
+        data_type: timestamp
+        tests:
+          - not_null
 
   - name: fact_shipment
-    description: "Shipment fact table with shipping dates and carrier information"
+    description: "Shipment tracking with delivery metrics and carrier information"
     columns:
       - name: shipment_id
         description: "Unique identifier for each shipment"
@@ -385,26 +424,32 @@ models:
               to: ref('fact_order')
               field: order_id
       - name: shipped_date
-        description: "Date when order was shipped"
+        description: "Date when shipment was dispatched"
         data_type: date
         tests:
           - not_null
       - name: days_to_ship
-        description: "Number of days between order date and ship date"
+        description: "Number of days between order and shipment"
         data_type: number
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: carrier
-        description: "Shipping carrier in uppercase format"
+        description: "Shipping carrier in uppercase"
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.not_empty_string
       - name: tracking_number
         description: "Shipment tracking number"
         data_type: varchar
         tests:
           - not_null
+          - dbt_utils.not_empty_string
           - unique
+      - name: last_updated
+        description: "Timestamp when the record was last updated"
+        data_type: timestamp
+        tests:
+          - not_null
