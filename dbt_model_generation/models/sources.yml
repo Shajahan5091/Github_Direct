@@ -7,7 +7,7 @@ sources:
     description: Raw data warehouse tables containing source system data
     tables:
       - name: addresses
-        description: Customer address information including street, city, and country details
+        description: Customer address information with unique identifiers and location details
         columns:
           - name: address_id
             description: Unique identifier for a specific address in the system
@@ -67,7 +67,7 @@ sources:
             data_type: timestamp_ntz
 
       - name: inventory
-        description: Current inventory levels of products across different warehouses
+        description: Current inventory levels of products across warehouses with supplier information
         columns:
           - name: product_id
             description: Unique identifier for a product in the inventory
@@ -84,12 +84,9 @@ sources:
           - name: last_updated
             description: The date and time when the inventory record was last updated
             data_type: timestamp_ntz
-          - name: inserted_at # added from mapping document
-            description: Date and time when the inventory record was inserted into the system
-            data_type: timestamp_ntz
 
       - name: order_items
-        description: Detailed information about each item within an order
+        description: Detailed information about each item within an order including quantities and pricing
         columns:
           - name: order_item_id
             description: Unique identifier for each item within an order
@@ -106,12 +103,9 @@ sources:
           - name: unit_price
             description: The price of each individual item in an order
             data_type: number
-          - name: inserted_at # added from mapping document
-            description: Date and time when the order item record was inserted into the system
-            data_type: timestamp_ntz
 
       - name: orders
-        description: Customer orders including status and total amount information
+        description: Customer orders with status tracking and total amounts
         columns:
           - name: order_id
             description: Unique identifier for each order
@@ -126,14 +120,11 @@ sources:
             description: The current state of an order (cancelled, delivered, shipped)
             data_type: varchar
           - name: total_amount
-            description: The total amount of the order including all items and fees
+            description: The total amount of the order including all items and applicable fees
             data_type: number
-          - name: inserted_at # added from mapping document
-            description: Date and time when the order record was inserted into the system
-            data_type: timestamp_ntz
 
       - name: payments
-        description: Individual payments made by customers for orders
+        description: Individual payment transactions made by customers with method and amount details
         columns:
           - name: payment_id
             description: Unique identifier for each payment transaction
@@ -150,12 +141,9 @@ sources:
           - name: amount
             description: The amount of payment made by a customer
             data_type: number
-          - name: inserted_at # added from mapping document
-            description: Date and time when the payment record was inserted into the system
-            data_type: timestamp_ntz
 
       - name: products
-        description: Individual products including names, categories, and pricing
+        description: Product catalog with names, categories, and pricing information
         columns:
           - name: product_id
             description: Unique identifier for each product in the catalog
@@ -191,12 +179,9 @@ sources:
           - name: tracking_number
             description: Unique identifier assigned to a shipment for tracking purposes
             data_type: varchar
-          - name: inserted_at # added from mapping document
-            description: Date and time when the shipment record was inserted into the system
-            data_type: timestamp_ntz
 
       - name: suppliers
-        description: External suppliers with contact information and status
+        description: External supplier information with contact details and status
         columns:
           - name: supplier_id
             description: Unique identifier for each supplier in the system
@@ -213,6 +198,3 @@ sources:
           - name: active_flag
             description: Indicates whether the supplier is currently active and eligible to receive orders
             data_type: boolean
-          - name: inserted_at # added from mapping document
-            description: Date and time when the supplier record was inserted into the system
-            data_type: timestamp_ntz
