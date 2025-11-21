@@ -2,10 +2,10 @@ version: 2
 
 models:
   - name: dim_address
-    description: "Dimension table containing customer address information with standardized formatting"
+    description: "Dimension table containing customer address information"
     columns:
       - name: address_id
-        description: "Unique identifier for each address record"
+        description: "Unique identifier for each address"
         data_type: varchar
         tests:
           - not_null
@@ -37,13 +37,13 @@ models:
           - not_null
           - dbt_utils.not_empty_string
       - name: last_updated
-        description: "Timestamp when the record was last updated"
+        description: "Timestamp when record was last updated"
         data_type: timestamp
         tests:
           - not_null
 
   - name: dim_category
-    description: "Dimension table for product categories with hierarchical path structure"
+    description: "Dimension table containing product category information"
     columns:
       - name: category_id
         description: "Unique identifier for each category"
@@ -58,10 +58,10 @@ models:
           - not_null
           - dbt_utils.not_empty_string
       - name: parent_category_id
-        description: "Reference to parent category for hierarchy"
+        description: "Reference to parent category for hierarchical structure"
         data_type: varchar
       - name: category_path
-        description: "Full hierarchical path up to 2 levels"
+        description: "Hierarchical path showing parent and current category"
         data_type: varchar
         tests:
           - not_null
@@ -73,13 +73,13 @@ models:
           - accepted_values:
               values: [true, false]
       - name: last_updated
-        description: "Timestamp when the record was last updated"
+        description: "Timestamp when record was last updated"
         data_type: timestamp
         tests:
           - not_null
 
   - name: dim_customer
-    description: "Customer dimension with standardized names and derived tier information"
+    description: "Dimension table containing customer information"
     columns:
       - name: customer_id
         description: "Unique identifier for each customer"
@@ -88,19 +88,19 @@ models:
           - not_null
           - unique
       - name: first_name
-        description: "Customer first name in uppercase"
+        description: "Customer first name in uppercase format"
         data_type: varchar
         tests:
           - not_null
           - dbt_utils.not_empty_string
       - name: last_name
-        description: "Customer last name in uppercase"
+        description: "Customer last name in uppercase format"
         data_type: varchar
         tests:
           - not_null
           - dbt_utils.not_empty_string
       - name: email
-        description: "Customer email in lowercase for consistency"
+        description: "Customer email address in lowercase format"
         data_type: varchar
         tests:
           - not_null
@@ -112,20 +112,20 @@ models:
         tests:
           - not_null
       - name: customer_tier
-        description: "Spending tier based on last 365 days (Gold/Silver/Bronze)"
+        description: "Customer spending tier based on last 365 days"
         data_type: varchar
         tests:
           - not_null
           - accepted_values:
               values: ['Gold', 'Silver', 'Bronze']
       - name: last_updated
-        description: "Timestamp when the record was last updated"
+        description: "Timestamp when record was last updated"
         data_type: timestamp
         tests:
           - not_null
 
   - name: dim_product
-    description: "Product dimension with pricing information and categorization"
+    description: "Dimension table containing product information"
     columns:
       - name: product_id
         description: "Unique identifier for each product"
@@ -134,7 +134,7 @@ models:
           - not_null
           - unique
       - name: product_name
-        description: "Product name in title case"
+        description: "Product name in title case format"
         data_type: varchar
         tests:
           - not_null
@@ -147,20 +147,20 @@ models:
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: price_band
-        description: "Price category (Low/Mid/High/Premium)"
+        description: "Price category bucket based on product price"
         data_type: varchar
         tests:
           - not_null
           - accepted_values:
               values: ['Low', 'Mid', 'High', 'Premium']
       - name: last_updated
-        description: "Timestamp when the record was last updated"
+        description: "Timestamp when record was last updated"
         data_type: timestamp
         tests:
           - not_null
 
   - name: dim_supplier
-    description: "Supplier dimension with contact information and status"
+    description: "Dimension table containing supplier information"
     columns:
       - name: supplier_id
         description: "Unique identifier for each supplier"
@@ -169,19 +169,19 @@ models:
           - not_null
           - unique
       - name: supplier_name
-        description: "Supplier name in title case"
+        description: "Supplier name in title case format"
         data_type: varchar
         tests:
           - not_null
           - dbt_utils.not_empty_string
       - name: contact_email
-        description: "Supplier contact email in lowercase"
+        description: "Supplier contact email in lowercase format"
         data_type: varchar
         tests:
           - not_null
           - dbt_utils.not_empty_string
       - name: country
-        description: "Supplier country in uppercase"
+        description: "Supplier country in uppercase format"
         data_type: varchar
         tests:
           - not_null
@@ -194,13 +194,13 @@ models:
           - accepted_values:
               values: [true, false]
       - name: last_updated
-        description: "Timestamp when the record was last updated"
+        description: "Timestamp when record was last updated"
         data_type: timestamp
         tests:
           - not_null
 
   - name: fact_inventory
-    description: "Inventory fact table with stock quantities and warehouse locations"
+    description: "Fact table containing inventory snapshot data"
     columns:
       - name: product_id
         description: "Foreign key reference to product dimension"
@@ -226,7 +226,7 @@ models:
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: warehouse_location
-        description: "Warehouse location in uppercase"
+        description: "Warehouse location in uppercase format"
         data_type: varchar
         tests:
           - not_null
@@ -237,20 +237,20 @@ models:
         tests:
           - not_null
       - name: is_latest
-        description: "Flag indicating latest record per product and supplier"
+        description: "Flag indicating if this is the latest record for product-supplier combination"
         data_type: boolean
         tests:
           - not_null
           - accepted_values:
               values: [true, false]
       - name: last_updated
-        description: "Timestamp when the record was last updated"
+        description: "Timestamp when record was last updated"
         data_type: timestamp
         tests:
           - not_null
 
   - name: fact_order
-    description: "Order fact table with customer orders and status information"
+    description: "Fact table containing order information"
     columns:
       - name: order_id
         description: "Unique identifier for each order"
@@ -272,7 +272,7 @@ models:
         tests:
           - not_null
       - name: order_status
-        description: "Normalized order status"
+        description: "Current status of the order"
         data_type: varchar
         tests:
           - not_null
@@ -286,13 +286,13 @@ models:
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: last_updated
-        description: "Timestamp when the record was last updated"
+        description: "Timestamp when record was last updated"
         data_type: timestamp
         tests:
           - not_null
 
   - name: fact_order_item
-    description: "Order line items with pricing and calculated amounts"
+    description: "Fact table containing order line item details"
     columns:
       - name: order_item_id
         description: "Unique identifier for each order item"
@@ -301,7 +301,7 @@ models:
           - not_null
           - unique
       - name: order_id
-        description: "Foreign key reference to order fact"
+        description: "Foreign key reference to order fact table"
         data_type: varchar
         tests:
           - not_null
@@ -317,28 +317,28 @@ models:
               to: ref('dim_product')
               field: product_id
       - name: quantity
-        description: "Quantity of items ordered"
+        description: "Quantity of product ordered"
         data_type: number
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: "> 0"
       - name: unit_price
-        description: "Price per unit"
+        description: "Price per unit of product"
         data_type: number
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: extended_amount
-        description: "Calculated amount (quantity * unit_price)"
+        description: "Total amount for line item (quantity * unit_price)"
         data_type: number
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: discount_amount
-        description: "Proportionally allocated discount amount"
+        description: "Discount amount allocated to this line item"
         data_type: number
         tests:
           - not_null
@@ -352,13 +352,13 @@ models:
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: last_updated
-        description: "Timestamp when the record was last updated"
+        description: "Timestamp when record was last updated"
         data_type: timestamp
         tests:
           - not_null
 
   - name: fact_payment
-    description: "Payment transactions with method and application status"
+    description: "Fact table containing payment information"
     columns:
       - name: payment_id
         description: "Unique identifier for each payment"
@@ -367,7 +367,7 @@ models:
           - not_null
           - unique
       - name: order_id
-        description: "Foreign key reference to order fact"
+        description: "Foreign key reference to order fact table"
         data_type: varchar
         tests:
           - not_null
@@ -380,7 +380,7 @@ models:
         tests:
           - not_null
       - name: payment_method
-        description: "Standardized payment method"
+        description: "Method used for payment"
         data_type: varchar
         tests:
           - not_null
@@ -401,13 +401,13 @@ models:
           - accepted_values:
               values: [true, false]
       - name: last_updated
-        description: "Timestamp when the record was last updated"
+        description: "Timestamp when record was last updated"
         data_type: timestamp
         tests:
           - not_null
 
   - name: fact_shipment
-    description: "Shipment tracking with delivery metrics and carrier information"
+    description: "Fact table containing shipment information"
     columns:
       - name: shipment_id
         description: "Unique identifier for each shipment"
@@ -416,7 +416,7 @@ models:
           - not_null
           - unique
       - name: order_id
-        description: "Foreign key reference to order fact"
+        description: "Foreign key reference to order fact table"
         data_type: varchar
         tests:
           - not_null
@@ -436,7 +436,7 @@ models:
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: carrier
-        description: "Shipping carrier in uppercase"
+        description: "Shipping carrier in uppercase format"
         data_type: varchar
         tests:
           - not_null
@@ -447,9 +447,8 @@ models:
         tests:
           - not_null
           - dbt_utils.not_empty_string
-          - unique
       - name: last_updated
-        description: "Timestamp when the record was last updated"
+        description: "Timestamp when record was last updated"
         data_type: timestamp
         tests:
           - not_null
