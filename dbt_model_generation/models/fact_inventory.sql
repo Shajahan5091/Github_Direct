@@ -23,66 +23,45 @@ with inventory_base as (
     from {{ source('dwh_raw', 'inventory') }} as inventory
     {% if var('models')['backfill_flag'] == 'true' %}
         where inventory.inserted_at between '{{ var("models")["backfill_start_date"] }}' and '{{ var("models")["backfill_end_date"] }}'
-    {% endif %}
-    {% if is_incremental() %}
-        where inventory.inserted_at > (select max(inserted_at) from {{ this }})
+    {% else %}
+        {% if is_incremental() %}
+            where inventory.inserted_at > (select max(inserted_at) from {{ this }})
+        {% endif %}
     {% endif %}
 ),
 
-inventory_transformed as (
+inventory_with_flags as (
     select
-        -- Product ID lookup with unknown handling
-        coalesce(inventory_base.product_id, '0') as product_id,
-        
-        -- Supplier ID lookup with unknown handling  
-        coalesce(inventory_base.supplier_id, '0') as supplier_id,
-        
-        -- Stock quantity with negative value handling
+        inventory_base.product_id,
+        inventory_base.supplier_id,
         case 
             when inventory_base.stock_qty < 0 then null
             else inventory_base.stock_qty
         end as stock_qty,
-        
-        -- Warehouse location uppercase transformation
         upper(inventory_base.warehouse_location) as warehouse_location,
-        
-        -- Convert timestamp to date for snapshot
         date(inventory_base.last_updated) as snapshot_date,
-        
-        -- Original timestamp fields
-        inventory_base.last_updated,
-        inventory_base.inserted_at
+        case 
+            when row_number() over (
+                partition by inventory_base.product_id, inventory_base.supplier_id 
+                order by inventory_base.last_updated desc
+            ) = 1 then true
+            else false
+        end as is_latest,
+        inventory_base.inserted_at as last_updated
     from inventory_base
 ),
 
-inventory_with_latest_flag as (
+final_inventory as (
     select
-        inventory_transformed.product_id,
-        inventory_transformed.supplier_id,
-        inventory_transformed.stock_qty,
-        inventory_transformed.warehouse_location,
-        inventory_transformed.snapshot_date,
-        
-        -- Flag latest record per product_id + supplier_id combination
-        case 
-            when inventory_transformed.last_updated = max(inventory_transformed.last_updated) 
-                over (partition by inventory_transformed.product_id, inventory_transformed.supplier_id)
-            then true
-            else false
-        end as is_latest,
-        
-        inventory_transformed.inserted_at as last_updated,
+        coalesce(inventory_flags.product_id, '0') as product_id,
+        coalesce(inventory_flags.supplier_id, '0') as supplier_id,
+        inventory_flags.stock_qty,
+        inventory_flags.warehouse_location,
+        inventory_flags.snapshot_date,
+        inventory_flags.is_latest,
+        inventory_flags.last_updated,
         current_timestamp() as last_updated_timestamp
-    from inventory_transformed
+    from inventory_with_flags as inventory_flags
 )
 
-select
-    inventory_final.product_id,
-    inventory_final.supplier_id,
-    inventory_final.stock_qty,
-    inventory_final.warehouse_location,
-    inventory_final.snapshot_date,
-    inventory_final.is_latest,
-    inventory_final.last_updated,
-    inventory_final.last_updated_timestamp
-from inventory_with_latest_flag as inventory_final
+select * from final_inventory
