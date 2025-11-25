@@ -1,10 +1,9 @@
 version: 2
-
 sources:
   - name: dwh_raw
     database: bsl_raw
     schema: dwh_raw
-    description: Raw data warehouse source tables
+    description: Raw data warehouse schema containing source system data for business operations including customers, orders, products, and related entities
     tables:
       - name: addresses
         description: This table stores information about customer addresses, including the unique address identifier, associated customer identifier, and address details such as street, city, and country, along with a timestamp for when the address was inserted into the system.
@@ -29,7 +28,7 @@ sources:
             data_type: timestamp_ntz
 
       - name: categories
-        description: This table stores information about categories in a hierarchical structure, where each category is uniquely identified by a CATEGORY_ID.
+        description: This table stores information about categories in a hierarchical structure, where each category is uniquely identified by a CATEGORY_ID. The CATEGORY_NAME field stores the name of the category, and the PARENT_CATEGORY_ID field references the CATEGORY_ID of the parent category, allowing for a nested categorization system.
         columns:
           - name: category_id
             description: Unique identifier for a category in the system, used to distinguish between different categories of products or services.
@@ -62,12 +61,12 @@ sources:
           - name: email
             description: The email address of the customer.
             data_type: varchar
-          - name: inserted_at
+          - name: inserted_at # auto corrected using semantic file
             description: Date and time when the customer record was inserted into the system.
             data_type: timestamp_ntz
 
       - name: inventory
-        description: This table stores information about the current inventory levels of various products across different warehouses.
+        description: This table stores information about the current inventory levels of various products across different warehouses, including the supplier of each product, the quantity in stock, and the location within the warehouse where the product is stored, with a timestamp indicating when the inventory level was last updated.
         columns:
           - name: product_id
             description: Unique identifier for a product in the inventory.
@@ -79,17 +78,14 @@ sources:
             description: The quantity of stock currently available in the inventory.
             data_type: number
           - name: warehouse_location
-            description: The physical location of the warehouse where the inventory is stored.
+            description: The physical location of the warehouse where the inventory is stored, represented by a combination of the state abbreviation and warehouse number.
             data_type: varchar
           - name: last_updated
             description: The date and time when the inventory record was last updated.
             data_type: timestamp_ntz
-          - name: inserted_at # auto corrected using semantic file - added missing column
-            description: Date and time when the inventory record was inserted into the system.
-            data_type: timestamp_ntz
 
       - name: order_items
-        description: This table stores detailed information about each item within an order.
+        description: This table stores detailed information about each item within an order, including the unique identifier for the order item, the order it belongs to, the product being ordered, the quantity of the product, and the price per unit of the product.
         columns:
           - name: order_item_id
             description: Unique identifier for each item within an order.
@@ -106,9 +102,6 @@ sources:
           - name: unit_price
             description: The price of each individual item in an order.
             data_type: number
-          - name: inserted_at # auto corrected using semantic file - added missing column
-            description: Date and time when the order item record was inserted into the system.
-            data_type: timestamp_ntz
 
       - name: orders
         description: This table stores information about customer orders, including a unique order identifier, the customer who placed the order, the date the order was made, the current status of the order, and the total amount of the order.
@@ -128,12 +121,9 @@ sources:
           - name: total_amount
             description: The total amount of the order, including all items and any applicable taxes or fees.
             data_type: number
-          - name: inserted_at # auto corrected using semantic file - added missing column
-            description: Date and time when the order record was inserted into the system.
-            data_type: timestamp_ntz
 
       - name: payments
-        description: This table stores information about individual payments made by customers.
+        description: This table stores information about individual payments made by customers, including the unique payment identifier, the associated order identifier, the date and time the payment was made, the payment method used, and the amount paid.
         columns:
           - name: payment_id
             description: Unique identifier for each payment transaction.
@@ -150,9 +140,6 @@ sources:
           - name: amount
             description: The amount of payment made by a customer.
             data_type: number
-          - name: inserted_at # auto corrected using semantic file - added missing column
-            description: Date and time when the payment record was inserted into the system.
-            data_type: timestamp_ntz
 
       - name: products
         description: This table stores information about individual products, including a unique identifier, product name, category, price, and the timestamp when the product was inserted into the system.
@@ -163,8 +150,8 @@ sources:
           - name: product_name
             description: The name of the product offered by the company, such as a specific model of phone, computer, or other electronic device.
             data_type: varchar
-          - name: category_id # auto corrected using semantic file - added missing column
-            description: The CATEGORY_ID column represents the unique identifier for the product category to which a product belongs.
+          - name: category_id # auto corrected using semantic file
+            description: The CATEGORY_ID column represents the unique identifier for the product category to which a product belongs, allowing for grouping and analysis of products by category.
             data_type: varchar
           - name: price
             description: The price of each product in the catalog, representing the amount that customers must pay to purchase the item.
@@ -191,12 +178,9 @@ sources:
           - name: tracking_number
             description: Unique identifier assigned to a shipment for tracking purposes.
             data_type: varchar
-          - name: inserted_at # auto corrected using semantic file - added missing column
-            description: Date and time when the shipment record was inserted into the system.
-            data_type: timestamp_ntz
 
       - name: suppliers
-        description: This table stores information about external suppliers that the organization interacts with.
+        description: This table stores information about external suppliers that the organization interacts with, including their unique identifier, name, contact email, country of origin, and an indicator of whether they are currently active or not.
         columns:
           - name: supplier_id
             description: Unique identifier for each supplier in the system.
@@ -213,6 +197,3 @@ sources:
           - name: active_flag
             description: Indicates whether the supplier is currently active and eligible to receive orders.
             data_type: boolean
-          - name: inserted_at # auto corrected using semantic file - added missing column
-            description: Date and time when the supplier record was inserted into the system.
-            data_type: timestamp_ntz
