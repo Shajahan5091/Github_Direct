@@ -3,7 +3,7 @@ sources:
   - name: dwh_raw
     database: bsl_raw
     schema: dwh_raw
-    description: Raw data warehouse schema containing source system data for business operations including customer, product, order, and inventory information
+    description: Raw data warehouse schema containing source tables for business operations including customers, orders, products, and related entities
     tables:
       - name: addresses
         description: The Addresses table stores information about the physical locations associated with customers, including the address details, city, and country, with each address uniquely identified by an Address ID and linked to a specific customer.
