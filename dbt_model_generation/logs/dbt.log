@@ -1,0 +1,18 @@
+
+
+============================== 23:10:36.294929 | 4d6b0062-ae01-49e3-ab47-5ce1c5c97673 ==============================
+[0m23:10:36.294929 [info ] [Dummy-1   ]: Running with dbt=1.9.4
+[0m23:10:36.296299 [debug] [Dummy-1   ]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'fail_fast': 'False', 'profiles_dir': '/tmp/dbt/', 'log_path': '/tmp/dbt/logs', 'version_check': 'True', 'debug': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'empty': 'None', 'log_format': 'default', 'invocation_command': 'dbt ', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'introspect': 'True', 'target_path': 'None', 'static_parser': 'True', 'send_anonymous_usage_stats': 'False'}
+[0m23:10:36.560942 [debug] [Dummy-1   ]: Set downloads directory='/tmp/dbt-downloads-r1_4nnrh'
+[0m23:10:36.562215 [debug] [Dummy-1   ]: Making package index registry request: GET https://hub.getdbt.com/api/v1/index.json
+[0m23:10:36.575446 [debug] [Dummy-1   ]: Response from registry index: GET https://hub.getdbt.com/api/v1/index.json 200
+[0m23:10:36.576700 [debug] [Dummy-1   ]: Making package registry request: GET https://hub.getdbt.com/api/v1/dbt-labs/dbt_utils.json
+[0m23:10:36.587440 [debug] [Dummy-1   ]: Response from registry: GET https://hub.getdbt.com/api/v1/dbt-labs/dbt_utils.json 200
+[0m23:10:36.606182 [info ] [Dummy-1   ]: Updating lock file in file path: /tmp/dbt/package-lock.yml
+[0m23:10:36.609144 [debug] [Dummy-1   ]: Set downloads directory='/tmp/dbt-downloads-g36upfvs'
+[0m23:10:36.615185 [info ] [Dummy-1   ]: Installing dbt-labs/dbt_utils
+[0m23:10:36.780868 [info ] [Dummy-1   ]: Installed from version 1.3.2
+[0m23:10:36.781751 [info ] [Dummy-1   ]: Up to date!
+[0m23:10:36.784336 [debug] [Dummy-1   ]: Resource report: {"command_name": "deps", "command_success": true, "command_wall_clock_time": 0.5981797, "process_in_blocks": "0", "process_kernel_time": 0.94, "process_mem_max_rss": "400956", "process_out_blocks": "0", "process_user_time": 4.5}
+[0m23:10:36.785335 [debug] [Dummy-1   ]: Command `cli deps` succeeded at 23:10:36.784846 after 0.60 seconds
+[0m23:10:36.786071 [debug] [Dummy-1   ]: Flushing usage events
