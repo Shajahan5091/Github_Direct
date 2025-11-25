@@ -3,10 +3,10 @@ sources:
   - name: dwh_raw
     database: bsl_raw
     schema: dwh_raw
-    description: Raw data warehouse schema containing source system data for business operations including customers, orders, products, and related entities
+    description: Raw data warehouse schema containing source system data for business operations including customer, product, order, and inventory information
     tables:
       - name: addresses
-        description: This table stores information about customer addresses, including the unique address identifier, associated customer identifier, and address details such as street, city, and country, along with a timestamp for when the address was inserted into the system.
+        description: The Addresses table stores information about the physical locations associated with customers, including the address details, city, and country, with each address uniquely identified by an Address ID and linked to a specific customer.
         columns:
           - name: address_id
             description: Unique identifier for a specific address in the system.
@@ -24,14 +24,14 @@ sources:
             description: The country where the address is located.
             data_type: varchar
           - name: inserted_at
-            description: The date and time when the address record was inserted into the system.
-            data_type: timestamp_ntz
+            description: Date and time when the address record was inserted into the system.
+            data_type: date
 
       - name: categories
-        description: This table stores information about categories in a hierarchical structure, where each category is uniquely identified by a CATEGORY_ID. The CATEGORY_NAME field stores the name of the category, and the PARENT_CATEGORY_ID field references the CATEGORY_ID of the parent category, allowing for a nested categorization system.
+        description: This table stores information about categories in a hierarchical structure, allowing for subcategories. Each category is uniquely identified by a CATEGORY_ID and has a descriptive name.
         columns:
           - name: category_id
-            description: Unique identifier for a category in the system, used to distinguish between different categories of products or services.
+            description: Unique identifier for a category in the catalog.
             data_type: varchar
           - name: category_name
             description: This column represents the main categories of products sold, which can be used to group and analyze sales data by product type.
@@ -42,12 +42,15 @@ sources:
           - name: is_active
             description: Indicates whether a category is currently active and available for use.
             data_type: boolean
+          - name: created_at # auto corrected using semantic file
+            description: Date and time when the category was created.
+            data_type: timestamp_ntz
           - name: inserted_at
             description: Date and time when the category was inserted into the system.
-            data_type: timestamp_ntz
+            data_type: date
 
       - name: customers
-        description: This table stores information about individual customers, including their unique identifier, name, email address, and the timestamp when their record was inserted into the database.
+        description: This table stores information about customers, including their unique identifier, name, email address, and the timestamp when their record was created.
         columns:
           - name: customer_id
             description: Unique identifier for each customer in the database.
@@ -61,12 +64,15 @@ sources:
           - name: email
             description: The email address of the customer.
             data_type: varchar
-          - name: inserted_at # auto corrected using semantic file
-            description: Date and time when the customer record was inserted into the system.
+          - name: created_at
+            description: Date and time when the customer account was created.
             data_type: timestamp_ntz
+          - name: inserted_at
+            description: Date and time when the customer record was inserted into the database.
+            data_type: date
 
       - name: inventory
-        description: This table stores information about the current inventory levels of various products across different warehouses, including the supplier of each product, the quantity in stock, and the location within the warehouse where the product is stored, with a timestamp indicating when the inventory level was last updated.
+        description: This table stores information about the current inventory levels of various products across different warehouses, including the supplier of each product, the quantity in stock, and the location within the warehouse.
         columns:
           - name: product_id
             description: Unique identifier for a product in the inventory.
@@ -83,28 +89,34 @@ sources:
           - name: last_updated
             description: The date and time when the inventory record was last updated.
             data_type: timestamp_ntz
+          - name: inserted_at
+            description: Date and time when the inventory record was inserted into the system.
+            data_type: date
 
       - name: order_items
-        description: This table stores detailed information about each item within an order, including the unique identifier for the order item, the order it belongs to, the product being ordered, the quantity of the product, and the price per unit of the product.
+        description: This table stores information about individual items within an order, including the order and product details, quantity, and unit price, with a unique identifier for each order item.
         columns:
           - name: order_item_id
             description: Unique identifier for each item within an order.
             data_type: varchar
           - name: order_id
-            description: Unique identifier for the order that the item belongs to.
+            description: Unique identifier for each order.
             data_type: varchar
           - name: product_id
             description: Unique identifier for the product being ordered.
             data_type: varchar
           - name: quantity
-            description: The quantity of an item ordered.
+            description: The quantity of the item ordered.
             data_type: number
           - name: unit_price
-            description: The price of each individual item in an order.
+            description: The price of a single unit of an item in an order.
             data_type: number
+          - name: inserted_at
+            description: The date and time when the order item was inserted into the system.
+            data_type: date
 
       - name: orders
-        description: This table stores information about customer orders, including a unique order identifier, the customer who placed the order, the date the order was made, the current status of the order, and the total amount of the order.
+        description: This table stores information about customer orders, including a unique order identifier, the customer who placed the order, the date the order was placed, the current status of the order, and the total amount of the order.
         columns:
           - name: order_id
             description: Unique identifier for each order.
@@ -116,39 +128,45 @@ sources:
             description: Date and time when the order was placed.
             data_type: timestamp_ntz
           - name: status
-            description: The current state of an order, indicating whether it has been cancelled, has been successfully delivered to the customer, or is currently in transit.
+            description: The current state of an order, indicating whether it has been successfully delivered to the customer, is in the process of being shipped, or has been cancelled.
             data_type: varchar
           - name: total_amount
             description: The total amount of the order, including all items and any applicable taxes or fees.
             data_type: number
+          - name: inserted_at
+            description: Date and time when the order was inserted into the system.
+            data_type: date
 
       - name: payments
-        description: This table stores information about individual payments made by customers, including the unique payment identifier, the associated order identifier, the date and time the payment was made, the payment method used, and the amount paid.
+        description: This table stores information about payments made for orders, including the payment method, date, and amount, with a unique identifier for each payment and a record of when the payment data was inserted into the system.
         columns:
           - name: payment_id
             description: Unique identifier for each payment transaction.
             data_type: varchar
           - name: order_id
-            description: Unique identifier for the order that the payment is associated with.
+            description: Unique identifier for the order that the payment was made against.
             data_type: varchar
           - name: payment_date
             description: Date and time when the payment was made.
             data_type: timestamp_ntz
           - name: payment_method
-            description: The method used by the customer to make a payment, such as PayPal, credit card, or debit card.
+            description: The method used by the customer to make a payment, such as a debit card, credit card, or online payment service like PayPal.
             data_type: varchar
           - name: amount
             description: The amount of payment made by a customer.
             data_type: number
+          - name: inserted_at
+            description: Date and time when the payment was inserted into the system.
+            data_type: date
 
       - name: products
-        description: This table stores information about individual products, including a unique identifier, product name, category, price, and the timestamp when the product was inserted into the system.
+        description: This table stores information about products, including their unique identifier, name, category, price, and creation timestamp.
         columns:
           - name: product_id
             description: Unique identifier for each product in the catalog.
             data_type: varchar
           - name: product_name
-            description: The name of the product offered by the company, such as a specific model of phone, computer, or other electronic device.
+            description: The name of the product being sold, such as a laptop, smartphone, or tablet, used to track sales and revenue by specific product model.
             data_type: varchar
           - name: category_id # auto corrected using semantic file
             description: The CATEGORY_ID column represents the unique identifier for the product category to which a product belongs, allowing for grouping and analysis of products by category.
@@ -156,15 +174,18 @@ sources:
           - name: price
             description: The price of each product in the catalog, representing the amount that customers must pay to purchase the item.
             data_type: number
+          - name: created_at # auto corrected using semantic file
+            description: Date and time when each product was created.
+            data_type: timestamp_ntz
           - name: inserted_at
             description: Date and time when the product was inserted into the system.
-            data_type: timestamp_ntz
+            data_type: date
 
       - name: shipments
-        description: This table stores information about shipments, including the unique shipment ID, the associated order ID, the date the shipment was sent, the carrier used, and the tracking number for the shipment.
+        description: This table stores information about shipments, including the unique shipment ID, the associated order ID, the date the shipment was made, the carrier used, and the tracking number.
         columns:
           - name: shipment_id
-            description: Unique identifier for a shipment, used to track and reference a specific shipment throughout the logistics process.
+            description: Unique identifier for each shipment.
             data_type: varchar
           - name: order_id
             description: Unique identifier for each order.
@@ -178,9 +199,12 @@ sources:
           - name: tracking_number
             description: Unique identifier assigned to a shipment for tracking purposes.
             data_type: varchar
+          - name: inserted_at
+            description: Date and time when the shipment record was inserted into the system.
+            data_type: date
 
       - name: suppliers
-        description: This table stores information about external suppliers that the organization interacts with, including their unique identifier, name, contact email, country of origin, and an indicator of whether they are currently active or not.
+        description: The Suppliers table stores information about external entities that provide goods or services to the organization, including their unique identifier, name, contact email, country of origin, and active status.
         columns:
           - name: supplier_id
             description: Unique identifier for each supplier in the system.
@@ -197,3 +221,6 @@ sources:
           - name: active_flag
             description: Indicates whether the supplier is currently active and eligible to receive orders.
             data_type: boolean
+          - name: inserted_at
+            description: Date and time when the supplier record was inserted into the system.
+            data_type: date
