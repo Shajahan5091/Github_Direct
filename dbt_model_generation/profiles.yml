@@ -1,10 +1,10 @@
 dbt_model_generation:
     outputs:
       dev:
-        account: YVCFONH-QR62969
+        account: AJONJJB-BQB66912
         database: BSL_MA
         password: Shajahan@snowflake_2002
-        role: DATADEVELOPER
+        role: ACCOUNTADMIN
         schema: DWH_MA
         threads: 1
         type: snowflake
