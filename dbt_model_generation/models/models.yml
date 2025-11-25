@@ -64,7 +64,7 @@ models:
           - not_null
 
   - name: dim_customer
-    description: Dimension table containing customer information with derived attributes
+    description: Dimension table containing customer information and derived attributes
     columns:
       - name: customer_id
         description: Unique identifier for each customer
@@ -102,7 +102,7 @@ models:
           - not_null
 
   - name: dim_product
-    description: Dimension table for products with pricing information and categorization
+    description: Dimension table for product information with pricing bands
     columns:
       - name: product_id
         description: Unique identifier for each product
@@ -114,15 +114,16 @@ models:
         tests:
           - not_null
       - name: price
-        description: Product price with decimal precision
+        description: Product price with 2 decimal precision
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
               inclusive: false
       - name: price_band
-        description: Price categorization bucket for analysis
+        description: Price category classification (Low/Mid/High/Premium)
         tests:
+          - not_null
           - accepted_values:
               values: ['Low', 'Mid', 'High', 'Premium']
       - name: last_updated
@@ -131,7 +132,7 @@ models:
           - not_null
 
   - name: dim_supplier
-    description: Dimension table containing supplier information and contact details
+    description: Dimension table for supplier information
     columns:
       - name: supplier_id
         description: Unique identifier for each supplier
@@ -162,7 +163,7 @@ models:
           - not_null
 
   - name: fact_inventory
-    description: Fact table tracking inventory levels by product and supplier over time
+    description: Fact table tracking inventory levels by product and supplier
     columns:
       - name: product_id
         description: Foreign key reference to product dimension
@@ -204,7 +205,7 @@ models:
           - not_null
 
   - name: fact_order
-    description: Fact table containing order header information and totals
+    description: Fact table containing order header information
     columns:
       - name: order_id
         description: Unique identifier for each order
@@ -229,7 +230,7 @@ models:
           - accepted_values:
               values: ['PENDING', 'CANCELLED', 'SHIPPED', 'DELIVERED']
       - name: total_amount
-        description: Total order amount including all items
+        description: Total order amount with 2 decimal precision
         tests:
           - not_null
           - dbt_utils.accepted_range:
@@ -240,7 +241,7 @@ models:
           - not_null
 
   - name: fact_order_item
-    description: Fact table containing individual order line items with pricing calculations
+    description: Fact table containing individual order line items with calculated amounts
     columns:
       - name: order_item_id
         description: Unique identifier for each order line item
@@ -269,24 +270,25 @@ models:
               min_value: 0
               inclusive: false
       - name: unit_price
-        description: Price per unit of the product
+        description: Price per unit with 2 decimal precision
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
       - name: extended_amount
-        description: Total amount before discounts (quantity * unit_price)
+        description: Calculated amount before discounts (quantity * unit_price)
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
       - name: discount_amount
-        description: Discount amount applied to this line item
+        description: Allocated discount amount for this line item
         tests:
+          - not_null
           - dbt_utils.accepted_range:
               min_value: 0
       - name: net_amount
-        description: Final amount after discounts
+        description: Final amount after applying discounts
         tests:
           - not_null
           - dbt_utils.accepted_range:
@@ -322,7 +324,7 @@ models:
           - accepted_values:
               values: ['CARD', 'UPI', 'COD', 'NETBANKING']
       - name: amount
-        description: Payment amount
+        description: Payment amount with 2 decimal precision
         tests:
           - not_null
           - dbt_utils.accepted_range:
@@ -340,7 +342,7 @@ models:
           - not_null
 
   - name: fact_shipment
-    description: Fact table containing shipment information and delivery metrics
+    description: Fact table tracking shipment information and delivery metrics
     columns:
       - name: shipment_id
         description: Unique identifier for each shipment
@@ -359,8 +361,9 @@ models:
         tests:
           - not_null
       - name: days_to_ship
-        description: Number of days between order and shipment
+        description: Number of days between order date and ship date
         tests:
+          - not_null
           - dbt_utils.accepted_range:
               min_value: 0
       - name: carrier
