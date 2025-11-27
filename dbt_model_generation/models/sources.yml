@@ -3,7 +3,7 @@ sources:
   - name: dwh_raw
     database: bsl_raw
     schema: dwh_raw
-    description: Raw data warehouse schema containing source system tables for business operations including customers, orders, products, and related entities
+    description: Raw data warehouse schema containing source tables for business operations including customers, orders, products, and related entities
     tables:
       - name: addresses
         description: The Addresses table stores information about the physical locations associated with customers, including the address details, city, and country, with each address uniquely identified by an Address ID and linked to a specific customer
@@ -42,7 +42,7 @@ sources:
           - name: is_active
             description: Indicates whether a category is currently active and available for use
             data_type: boolean
-          - name: created_at # auto corrected using semantic file
+          - name: created_at  # auto corrected using semantic file
             description: Date and time when the category was created
             data_type: timestamp_ntz
           - name: inserted_at
@@ -55,10 +55,10 @@ sources:
           - name: customer_id
             description: Unique identifier for each customer in the database
             data_type: varchar
-          - name: first_name # auto corrected using semantic file
+          - name: first_name  # auto corrected using semantic file
             description: The first name of the customer
             data_type: varchar
-          - name: last_name # auto corrected using semantic file
+          - name: last_name  # auto corrected using semantic file
             description: The customer's last name
             data_type: varchar
           - name: email
@@ -168,13 +168,13 @@ sources:
           - name: product_name
             description: The name of the product being sold, such as a laptop, smartphone, or tablet, used to track sales and revenue by specific product model
             data_type: varchar
-          - name: category_id # auto corrected using semantic file
+          - name: category_id  # auto corrected using semantic file
             description: The CATEGORY_ID column represents the unique identifier for the product category to which a product belongs, allowing for grouping and analysis of products by category
             data_type: varchar
           - name: price
             description: The price of each product in the catalog, representing the amount that customers must pay to purchase the item
             data_type: number
-          - name: created_at # auto corrected using semantic file
+          - name: created_at  # auto corrected using semantic file
             description: Date and time when each product was created
             data_type: timestamp_ntz
           - name: inserted_at
