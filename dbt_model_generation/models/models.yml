@@ -1,390 +1,379 @@
 version: 2
 models:
-  - name: dim_address
-    description: Dimension table containing customer address information with standardized formatting
-    columns:
-      - name: address_id
-        description: Unique identifier for each address record
-        tests:
-          - unique
-          - not_null
-      - name: customer_id
-        description: Foreign key reference to customer dimension
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_customer')
-              field: customer_id
-      - name: address_line1
-        description: Primary address line with trimmed whitespace
-        tests:
-          - not_null
-      - name: city
-        description: City name in uppercase format
-        tests:
-          - not_null
-      - name: country
-        description: Country name
-        tests:
-          - not_null
-      - name: last_updated
-        description: Timestamp when the record was last updated
-        tests:
-          - not_null
+- name: dim_address
+  description: Dimension table containing customer address information with standardized formatting
+  columns:
+  - name: address_id
+    description: Unique identifier for each address record
+    tests:
+    - unique
+    - not_null
+  - name: customer_id
+    description: Foreign key reference to customer dimension
+    tests:
+    - not_null
+    - relationships:
+        to: ref('dim_customer')
+        field: customer_id
+  - name: address_line1
+    description: Primary address line with trimmed whitespace
+    tests:
+    - not_null
+  - name: city
+    description: City name in uppercase format
+    tests:
+    - not_null
+  - name: country
+    description: Country name
+    tests:
+    - not_null
+  - name: last_updated
+    description: Timestamp when the record was last updated
+    tests:
+    - not_null
 
-  - name: dim_category
-    description: Dimension table containing product category hierarchy and relationships
-    columns:
-      - name: category_id
-        description: Unique identifier for each category
-        tests:
-          - unique
-          - not_null
-      - name: category_name
-        description: Category name in title case format
-        tests:
-          - not_null
-      - name: parent_category_id
-        description: Reference to parent category for hierarchy
-        tests:
-          - relationships:
-              to: ref('dim_category')
-              field: category_id
-      - name: category_path
-        description: Full category path showing hierarchy up to 2 levels
-        tests:
-          - not_null
-      - name: is_active
-        description: Boolean flag indicating if category is currently active
-        tests:
-          - not_null
-          - accepted_values:
-              values: [true, false]
-      - name: last_updated
-        description: Timestamp when the record was last updated
-        tests:
-          - not_null
+- name: dim_category
+  description: Dimension table for product categories with hierarchical structure
+  columns:
+  - name: category_id
+    description: Unique identifier for each category
+    tests:
+    - unique
+    - not_null
+  - name: category_name
+    description: Category name in title case format
+    tests:
+    - not_null
+  - name: parent_category_id
+    description: Reference to parent category for hierarchical structure
+  - name: category_path
+    description: Full category path showing hierarchy up to 2 levels
+  - name: is_active
+    description: Boolean flag indicating if category is currently active
+    tests:
+    - not_null
+    - accepted_values:
+        values: [true, false]
+  - name: last_updated
+    description: Timestamp when the record was last updated
+    tests:
+    - not_null
 
-  - name: dim_customer
-    description: Dimension table containing customer information and derived attributes
-    columns:
-      - name: customer_id
-        description: Unique identifier for each customer
-        tests:
-          - unique
-          - not_null
-      - name: first_name
-        description: Customer first name in uppercase format
-        tests:
-          - not_null
-      - name: last_name
-        description: Customer last name in uppercase format
-        tests:
-          - not_null
-      - name: email
-        description: Customer email address in lowercase format
-        tests:
-          - not_null
-          - unique
-          - dbt_utils.accepted_range:
-              min_value: 1
-              inclusive: true
-      - name: customer_since_date
-        description: Date when customer first registered
-        tests:
-          - not_null
-      - name: customer_tier
-        description: Customer spending tier based on last 365 days activity
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['Gold', 'Silver', 'Bronze']
-      - name: last_updated
-        description: Timestamp when the record was last updated
-        tests:
-          - not_null
+- name: dim_customer
+  description: Dimension table containing customer information with derived attributes
+  columns:
+  - name: customer_id
+    description: Unique identifier for each customer
+    tests:
+    - unique
+    - not_null
+  - name: first_name
+    description: Customer first name in uppercase format
+    tests:
+    - not_null
+  - name: last_name
+    description: Customer last name in uppercase format
+    tests:
+    - not_null
+  - name: email
+    description: Customer email address in lowercase format
+    tests:
+    - not_null
+    - unique
+    - dbt_utils.accepted_range:
+        min_value: 1
+        max_value: 255
+  - name: customer_since_date
+    description: Date when customer first registered
+    tests:
+    - not_null
+  - name: customer_tier
+    description: Customer spending tier based on last 365 days (Gold/Silver/Bronze)
+    tests:
+    - accepted_values:
+        values: ['Gold', 'Silver', 'Bronze']
+  - name: last_updated
+    description: Timestamp when the record was last updated
+    tests:
+    - not_null
 
-  - name: dim_product
-    description: Dimension table containing product information and price categorization
-    columns:
-      - name: product_id
-        description: Unique identifier for each product
-        tests:
-          - unique
-          - not_null
-      - name: product_name
-        description: Product name in title case format
-        tests:
-          - not_null
-      - name: price
-        description: Product price with 2 decimal precision
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
-      - name: price_band
-        description: Price category bucket based on product price
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['Low', 'Mid', 'High', 'Premium']
-      - name: last_updated
-        description: Timestamp when the record was last updated
-        tests:
-          - not_null
+- name: dim_product
+  description: Dimension table for products with pricing information and categorization
+  columns:
+  - name: product_id
+    description: Unique identifier for each product
+    tests:
+    - unique
+    - not_null
+  - name: product_name
+    description: Product name in title case format
+    tests:
+    - not_null
+  - name: price
+    description: Product price with 2 decimal precision
+    tests:
+    - not_null
+    - dbt_utils.accepted_range:
+        min_value: 0
+        inclusive: false
+  - name: price_band
+    description: Price category bucket (Low/Mid/High/Premium)
+    tests:
+    - not_null
+    - accepted_values:
+        values: ['Low', 'Mid', 'High', 'Premium']
+  - name: last_updated
+    description: Timestamp when the record was last updated
+    tests:
+    - not_null
 
-  - name: dim_supplier
-    description: Dimension table containing supplier information and contact details
-    columns:
-      - name: supplier_id
-        description: Unique identifier for each supplier
-        tests:
-          - unique
-          - not_null
-      - name: supplier_name
-        description: Supplier name in title case format
-        tests:
-          - not_null
-      - name: contact_email
-        description: Supplier contact email in lowercase format
-        tests:
-          - not_null
-      - name: country
-        description: Supplier country in uppercase format
-        tests:
-          - not_null
-      - name: is_active
-        description: Boolean flag indicating if supplier is currently active
-        tests:
-          - not_null
-          - accepted_values:
-              values: [true, false]
-      - name: last_updated
-        description: Timestamp when the record was last updated
-        tests:
-          - not_null
+- name: dim_supplier
+  description: Dimension table containing supplier information and contact details
+  columns:
+  - name: supplier_id
+    description: Unique identifier for each supplier
+    tests:
+    - unique
+    - not_null
+  - name: supplier_name
+    description: Supplier name in title case format
+    tests:
+    - not_null
+  - name: contact_email
+    description: Supplier contact email in lowercase format
+    tests:
+    - not_null
+  - name: country
+    description: Supplier country in uppercase format
+    tests:
+    - not_null
+  - name: is_active
+    description: Boolean flag indicating if supplier is currently active
+    tests:
+    - not_null
+    - accepted_values:
+        values: [true, false]
+  - name: last_updated
+    description: Timestamp when the record was last updated
+    tests:
+    - not_null
 
-  - name: fact_inventory
-    description: Fact table containing inventory levels and warehouse information
-    columns:
-      - name: product_id
-        description: Foreign key reference to product dimension
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_product')
-              field: product_id
-      - name: supplier_id
-        description: Foreign key reference to supplier dimension
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_supplier')
-              field: supplier_id
-      - name: stock_qty
-        description: Current stock quantity
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-      - name: warehouse_location
-        description: Warehouse location in uppercase format
-        tests:
-          - not_null
-      - name: snapshot_date
-        description: Date of inventory snapshot
-        tests:
-          - not_null
-      - name: is_latest
-        description: Flag indicating latest record per product and supplier
-        tests:
-          - not_null
-          - accepted_values:
-              values: [true, false]
-      - name: last_updated
-        description: Timestamp when the record was last updated
-        tests:
-          - not_null
+- name: fact_inventory
+  description: Fact table tracking inventory levels by product and supplier with snapshot capabilities
+  columns:
+  - name: product_id
+    description: Foreign key reference to product dimension
+    tests:
+    - not_null
+    - relationships:
+        to: ref('dim_product')
+        field: product_id
+  - name: supplier_id
+    description: Foreign key reference to supplier dimension
+    tests:
+    - not_null
+    - relationships:
+        to: ref('dim_supplier')
+        field: supplier_id
+  - name: stock_qty
+    description: Current stock quantity
+    tests:
+    - not_null
+    - dbt_utils.accepted_range:
+        min_value: 0
+  - name: warehouse_location
+    description: Warehouse location in uppercase format
+    tests:
+    - not_null
+  - name: snapshot_date
+    description: Date of inventory snapshot
+    tests:
+    - not_null
+  - name: is_latest
+    description: Flag indicating the most recent record per product and supplier
+    tests:
+    - not_null
+    - accepted_values:
+        values: [true, false]
+  - name: last_updated
+    description: Timestamp when the record was last updated
+    tests:
+    - not_null
 
-  - name: fact_order
-    description: Fact table containing order transactions and customer relationships
-    columns:
-      - name: order_id
-        description: Unique identifier for each order
-        tests:
-          - unique
-          - not_null
-      - name: customer_id
-        description: Foreign key reference to customer dimension
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_customer')
-              field: customer_id
-      - name: order_date
-        description: Date when order was placed
-        tests:
-          - not_null
-      - name: order_status
-        description: Current status of the order
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['PENDING', 'CANCELLED', 'SHIPPED', 'DELIVERED']
-      - name: total_amount
-        description: Total order amount with 2 decimal precision
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
-      - name: last_updated
-        description: Timestamp when the record was last updated
-        tests:
-          - not_null
+- name: fact_order
+  description: Fact table containing order header information and totals
+  columns:
+  - name: order_id
+    description: Unique identifier for each order
+    tests:
+    - unique
+    - not_null
+  - name: customer_id
+    description: Foreign key reference to customer dimension
+    tests:
+    - not_null
+    - relationships:
+        to: ref('dim_customer')
+        field: customer_id
+  - name: order_date
+    description: Date when order was placed
+    tests:
+    - not_null
+  - name: order_status
+    description: Normalized order status in uppercase
+    tests:
+    - not_null
+    - accepted_values:
+        values: ['PENDING', 'CANCELLED', 'SHIPPED', 'DELIVERED']
+  - name: total_amount
+    description: Total order amount with 2 decimal precision
+    tests:
+    - not_null
+    - dbt_utils.accepted_range:
+        min_value: 0
+        inclusive: false
+  - name: last_updated
+    description: Timestamp when the record was last updated
+    tests:
+    - not_null
 
-  - name: fact_order_item
-    description: Fact table containing individual order line items and calculations
-    columns:
-      - name: order_item_id
-        description: Unique identifier for each order item
-        tests:
-          - unique
-          - not_null
-      - name: order_id
-        description: Foreign key reference to order fact table
-        tests:
-          - not_null
-          - relationships:
-              to: ref('fact_order')
-              field: order_id
-      - name: product_id
-        description: Foreign key reference to product dimension
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_product')
-              field: product_id
-      - name: quantity
-        description: Quantity of items ordered
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 1
-              inclusive: true
-      - name: unit_price
-        description: Price per unit with 2 decimal precision
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
-      - name: extended_amount
-        description: Calculated amount before discounts (quantity * unit_price)
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
-      - name: discount_amount
-        description: Proportionally allocated discount amount
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-      - name: net_amount
-        description: Final amount after discounts (extended_amount - discount_amount)
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
-      - name: last_updated
-        description: Timestamp when the record was last updated
-        tests:
-          - not_null
+- name: fact_order_item
+  description: Fact table containing individual order line items with calculated amounts
+  columns:
+  - name: order_item_id
+    description: Unique identifier for each order line item
+    tests:
+    - unique
+    - not_null
+  - name: order_id
+    description: Foreign key reference to order fact table
+    tests:
+    - not_null
+    - relationships:
+        to: ref('fact_order')
+        field: order_id
+  - name: product_id
+    description: Foreign key reference to product dimension
+    tests:
+    - not_null
+    - relationships:
+        to: ref('dim_product')
+        field: product_id
+  - name: quantity
+    description: Quantity of items ordered
+    tests:
+    - not_null
+    - dbt_utils.accepted_range:
+        min_value: 1
+  - name: unit_price
+    description: Price per unit with 2 decimal precision
+    tests:
+    - not_null
+    - dbt_utils.accepted_range:
+        min_value: 0
+        inclusive: false
+  - name: extended_amount
+    description: Calculated amount (quantity * unit_price)
+    tests:
+    - not_null
+    - dbt_utils.accepted_range:
+        min_value: 0
+        inclusive: false
+  - name: discount_amount
+    description: Proportionally allocated discount amount
+    tests:
+    - not_null
+    - dbt_utils.accepted_range:
+        min_value: 0
+  - name: net_amount
+    description: Final amount after discount (extended_amount - discount_amount)
+    tests:
+    - not_null
+    - dbt_utils.accepted_range:
+        min_value: 0
+        inclusive: false
+  - name: last_updated
+    description: Timestamp when the record was last updated
+    tests:
+    - not_null
 
-  - name: fact_payment
-    description: Fact table containing payment transactions and methods
-    columns:
-      - name: payment_id
-        description: Unique identifier for each payment
-        tests:
-          - unique
-          - not_null
-      - name: order_id
-        description: Foreign key reference to order fact table
-        tests:
-          - not_null
-          - relationships:
-              to: ref('fact_order')
-              field: order_id
-      - name: payment_date
-        description: Date when payment was processed
-        tests:
-          - not_null
-      - name: payment_method
-        description: Method used for payment
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['CARD', 'UPI', 'COD', 'NETBANKING']
-      - name: amount
-        description: Payment amount with 2 decimal precision
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
-      - name: is_fully_applied
-        description: Flag indicating if total payments cover order amount
-        tests:
-          - not_null
-          - accepted_values:
-              values: [true, false]
-      - name: last_updated
-        description: Timestamp when the record was last updated
-        tests:
-          - not_null
+- name: fact_payment
+  description: Fact table tracking payment transactions with validation flags
+  columns:
+  - name: payment_id
+    description: Unique identifier for each payment transaction
+    tests:
+    - unique
+    - not_null
+  - name: order_id
+    description: Foreign key reference to order fact table
+    tests:
+    - not_null
+    - relationships:
+        to: ref('fact_order')
+        field: order_id
+  - name: payment_date
+    description: Date when payment was processed
+    tests:
+    - not_null
+  - name: payment_method
+    description: Payment method in uppercase format
+    tests:
+    - not_null
+    - accepted_values:
+        values: ['CARD', 'UPI', 'COD', 'NETBANKING']
+  - name: amount
+    description: Payment amount with 2 decimal precision
+    tests:
+    - not_null
+    - dbt_utils.accepted_range:
+        min_value: 0
+        inclusive: false
+  - name: is_fully_applied
+    description: Flag indicating if total payments cover order amount
+    tests:
+    - not_null
+    - accepted_values:
+        values: [true, false]
+  - name: last_updated
+    description: Timestamp when the record was last updated
+    tests:
+    - not_null
 
-  - name: fact_shipment
-    description: Fact table containing shipment information and delivery metrics
-    columns:
-      - name: shipment_id
-        description: Unique identifier for each shipment
-        tests:
-          - unique
-          - not_null
-      - name: order_id
-        description: Foreign key reference to order fact table
-        tests:
-          - not_null
-          - relationships:
-              to: ref('fact_order')
-              field: order_id
-      - name: shipped_date
-        description: Date when order was shipped
-        tests:
-          - not_null
-      - name: days_to_ship
-        description: Number of days between order and shipment
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-      - name: carrier
-        description: Shipping carrier in uppercase format
-        tests:
-          - not_null
-      - name: tracking_number
-        description: Shipment tracking number
-        tests:
-          - not_null
-      - name: last_updated
-        description: Timestamp when the record was last updated
-        tests:
-          - not_null
+- name: fact_shipment
+  description: Fact table containing shipment information with delivery metrics
+  columns:
+  - name: shipment_id
+    description: Unique identifier for each shipment
+    tests:
+    - unique
+    - not_null
+  - name: order_id
+    description: Foreign key reference to order fact table
+    tests:
+    - not_null
+    - relationships:
+        to: ref('fact_order')
+        field: order_id
+  - name: shipped_date
+    description: Date when order was shipped
+    tests:
+    - not_null
+  - name: days_to_ship
+    description: Number of days between order and shipment
+    tests:
+    - not_null
+    - dbt_utils.accepted_range:
+        min_value: 0
+  - name: carrier
+    description: Shipping carrier name in uppercase
+    tests:
+    - not_null
+  - name: tracking_number
+    description: Shipment tracking number
+    tests:
+    - not_null
+  - name: last_updated
+    description: Timestamp when the record was last updated
+    tests:
+    - not_null
