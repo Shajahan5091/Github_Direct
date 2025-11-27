@@ -31,7 +31,10 @@ WITH source_orders AS (
         WHERE inserted_at BETWEEN '{{ var("backfill_start_date") }}' AND '{{ var("backfill_end_date") }}'
     {% else %}
         {% if is_incremental() %}
-            WHERE inserted_at > COALESCE( (SELECT MAX(last_updated) FROM BSL_MA.DWH_MA.fact_order_item), TO_DATE('0001-01-01'))
+            WHERE inserted_at > COALESCE(
+                (SELECT MAX(last_updated) FROM BSL_MA.DWH_MA.fact_order), 
+                TO_DATE('0001-01-01')
+            )
         {% endif %}
     {% endif %}
 ),
@@ -42,7 +45,7 @@ customer_lookup AS (
     FROM {{ ref('dim_customer') }}
 ),
 
-orders_with_valid_customers AS (
+validated_orders AS (
     SELECT
         source_orders.order_id,
         source_orders.customer_id,
@@ -70,7 +73,7 @@ transformed AS (
             ELSE total_amount
         END AS total_amount,
         inserted_at AS last_updated
-    FROM orders_with_valid_customers
+    FROM validated_orders
 )
 
 SELECT * FROM transformed
