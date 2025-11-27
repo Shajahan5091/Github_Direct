@@ -36,15 +36,18 @@ parent_categories AS (
 transformed AS (
     SELECT
         source_data.category_id,
-        TRIM(INITCAP(source_data.category_name)) AS category_name, -- auto corrected using semantic file
+        TRIM(INITCAP(source_data.category_name)) AS category_name, -- Trim and title-case
         source_data.parent_category_id,
         CASE 
             WHEN source_data.parent_category_id IS NOT NULL 
-                 AND parent_categories.category_name IS NOT NULL
-            THEN TRIM(INITCAP(parent_categories.category_name)) || ' > ' || TRIM(INITCAP(source_data.category_name))
-            ELSE TRIM(INITCAP(source_data.category_name))
-        END AS category_path,
-        COALESCE(source_data.is_active, TRUE) AS is_active, -- If null, default true
+            THEN CONCAT(
+                COALESCE(parent_categories.category_name, ''), 
+                ' > ', 
+                source_data.category_name
+            )
+            ELSE source_data.category_name
+        END AS category_path, -- Build path up to 2 levels: PARENT_category_name > category_name; Join dim_category using parent_category_id
+        COALESCE(source_data.is_active, TRUE) AS is_active, -- If null default true -- auto corrected using semantic file
         source_data.inserted_at AS last_updated
     FROM source_data
     LEFT JOIN parent_categories 
