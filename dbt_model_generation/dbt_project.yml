@@ -9,10 +9,9 @@ config-version: 2
 profile: 'dbt_model_generation'
 
 vars:
-  models:
-    backfill_flag: "false"
-    backfill_start_date: "2022-01-01"
-    backfill_end_date: "2022-01-02"
+  backfill_flag: "false"
+  backfill_start_date: "2022-01-01"
+  backfill_end_date: "2022-01-02"
 
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be
